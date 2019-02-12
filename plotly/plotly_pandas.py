@@ -9,6 +9,16 @@ from functools import partial
 #dependency on plotly package added - actually this is only to load the plotly js script...
 from offline import iplot, init_notebook_mode
 init_notebook_mode(connected=False) 
+
+from IPython.core.display import HTML, display
+
+display(HTML("""
+<style>
+/* for chart subplots tables produced by 'draw_charts_table' */
+.table-no-border {
+    border: none !important;
+}
+</style>"""))   
     
 DEFAULT_PLOTLY_COLORS = [
     '#1f77b4',  # muted blue
@@ -31,7 +41,6 @@ def grouped(iterable, n):
     return izip_longest(*[iter(iterable)]*n)
     
 def plotly_charts_table(charts, cols):
-    from IPython.core.display import HTML, display
     "draw a sequence of HTML charts (e.g. plotly interactive charts) as 'subplots' in a table with 'cols' columns"
     table_content = '<table class="table-no-border">'
     div_ids = []
