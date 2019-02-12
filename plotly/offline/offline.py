@@ -311,7 +311,7 @@ def init_notebook_mode(connected=False):
 
 
 def _plot_html(figure_or_data, config, validate, default_width,
-               default_height, global_requirejs):
+               default_height, global_requirejs, dest_div_id = None):
 
     figure = tools.return_figure_from_figure_or_data(figure_or_data, validate)
 
@@ -332,7 +332,7 @@ def _plot_html(figure_or_data, config, validate, default_width,
     else:
         height = str(height) + 'px'
 
-    plotdivid = uuid.uuid4()
+    plotdivid = uuid.uuid4() if dest_div_id is None else dest_div_id
     jdata = _json.dumps(figure.get('data', []), cls=utils.PlotlyJSONEncoder)
     jlayout = _json.dumps(figure.get('layout', {}),
                           cls=utils.PlotlyJSONEncoder)
@@ -376,11 +376,15 @@ def _plot_html(figure_or_data, config, validate, default_width,
                       if global_requirejs else '')
     optional_line2 = ('}});' if global_requirejs else '')
 
+    if dest_div_id is None:
+        div_text = ('<div id="{id}" style="height: {height}; width: {width};" '
+                    'class="plotly-graph-div">'
+                    '</div>')
+    else:
+        div_text = ''
+        
     plotly_html_div = (
-        ''
-        '<div id="{id}" style="height: {height}; width: {width};" '
-        'class="plotly-graph-div">'
-        '</div>'
+        div_text + 
         '<script type="text/javascript">' +
         optional_line1 +
         'window.PLOTLYENV=window.PLOTLYENV || {{}};'
@@ -397,7 +401,7 @@ def _plot_html(figure_or_data, config, validate, default_width,
 
 def iplot(figure_or_data, show_link=False, link_text='Export to plot.ly',
           validate=True, image=None, filename='plot_image', image_width=800,
-          image_height=600, config=None):
+          image_height=600, config=None, dest_div_id=None):
     """
     Draw plotly graphs inside an IPython or Jupyter notebook without
     connecting to an external server.
@@ -465,7 +469,7 @@ def iplot(figure_or_data, show_link=False, link_text='Export to plot.ly',
     frames = _json.loads(_json.dumps(figure.get('frames', None),
                                      cls=plotly.utils.PlotlyJSONEncoder))
 
-    fig = {'data': data, 'layout': layout, 'config': jconfig}
+    fig = {'data': data, 'layout': layout, 'config': jconfig, 'div_id': dest_div_id}
     if frames:
         fig['frames'] = frames
 
@@ -473,7 +477,7 @@ def iplot(figure_or_data, show_link=False, link_text='Export to plot.ly',
 
     if __PLOTLY_OFFLINE_INITIALIZED:
         plot_html, plotdivid, width, height = _plot_html(
-            figure_or_data, config, validate, '100%', 525, True
+            figure_or_data, config, validate, '100%', 525, True, dest_div_id=dest_div_id
         )
         resize_script = ''
         if width == '100%' or height == '100%':
