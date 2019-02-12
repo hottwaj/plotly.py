@@ -20,7 +20,7 @@ display(HTML("""
 }
 </style>"""))   
     
-DEFAULT_PLOTLY_COLORS = [
+DEFAULT_COLORS = [
     '#1f77b4',  # muted blue
     '#ff7f0e',  # safety orange
     '#2ca02c',  # cooked asparagus green
@@ -40,7 +40,7 @@ def grouped(iterable, n):
     #from http://stackoverflow.com/a/5389547/1280629
     return izip_longest(*[iter(iterable)]*n)
     
-def plotly_charts_table(charts, cols):
+def charts_table(charts, cols):
     "draw a sequence of HTML charts (e.g. plotly interactive charts) as 'subplots' in a table with 'cols' columns"
     table_content = '<table class="table-no-border">'
     div_ids = []
@@ -50,6 +50,7 @@ def plotly_charts_table(charts, cols):
             if chart is not None:
                 chart_div_id = unicode(uuid.uuid4())
                 div_ids.append(chart_div_id)
+                chart.set_dest_div(chart_div_id)
                 table_content += '<td class="table-no-border" id="%s"></td>' % chart_div_id
         table_content += '</tr>'
     table_content += '</table>'
@@ -57,9 +58,9 @@ def plotly_charts_table(charts, cols):
     display(HTML(table_content))
     
     for i, chart in zip(div_ids, charts):
-        chart(dest_div_id = i)
+        display(chart)
 
-def plotly_percent_axis(axis_settings = {}, tick_precision = 0, hover_precision = 2):
+def percent_axis(axis_settings = {}, tick_precision = 0, hover_precision = 2):
     return dict(axis_settings, **{
         'tickformat': ',.%d%%' % tick_precision,
         'hoverformat': ',.%d%%' % hover_precision, 
@@ -96,11 +97,36 @@ def dict_merge(a, b, path=None):
             a[key] = bval
     return a
 
-def plotly_scatter_plot(df, x_col, y_col, 
+class _PlotlyChartBundle(object):
+    """Class for returning a displayable object wrapping a plotly chart.
+    This is used to wrap a plotted chart so we can then drop it into a table if required."""
+    
+    def __init__(self, data_layout, width, height, config, dest_div_id = None):
+        self.data_layout = data_layout
+        self.width = width
+        self.height = height
+        self.config = config
+        self.dest_div_id = dest_div_id
+        
+    def set_dest_div(self, dest_div_id):
+        self.dest_div_id = dest_div_id
+        
+    def _repr_mimebundle_(self, *args, **kwargs):
+        #use iplot to return a renderable bundle
+        bundle = iplot(self.data_layout, 
+              image_width = self.width, 
+              image_height = self.height, 
+              config = self.config, 
+              dest_div_id = self.dest_div_id,
+              return_bundle = True)
+
+        return bundle
+        
+def scatter(df, x_col, y_col, 
                      groups_col = None, tooltip_cols = [], group_order = None, 
                      layout = dict(), series_dict = dict(), x_order = [], group_colours = dict(),
                      color_col = None, size_col = None,
-                     width = 600, height = 400, defer = False, dest_div_id = None):
+                     width = 600, height = 400, dest_div_id = None):
     pl_data = []
     if groups_col is not None and color_col is not None:
         raise RuntimeError('Only one of "groups_col" or "color_col" should be provided when calling this function')
@@ -167,22 +193,16 @@ def plotly_scatter_plot(df, x_col, y_col,
                        grp_vals = numpy.repeat(True, len(df)))
     
     data_layout = {'data': pl_data, 'layout': layout}
-    if defer:
-        return partial(iplot, 
-                       data_layout, 
-                       image_width = width, 
-                       image_height = height, 
-                       config = default_config)
-    else:
-        return iplot(data_layout, 
-                     image_width = width, 
-                     image_height = height, 
-                     config = default_config, 
-                     dest_div_id = dest_div_id)
 
-def shaded_scatterplot(values_df, x_item, y_item, color_item = None, title = '', value_format = '%.2f', field_caption = '', ticksuffix = '', width = 700, height=500):
+    return _PlotlyChartBundle(data_layout, 
+                              width = width, 
+                              height = height, 
+                              config = default_config, 
+                              dest_div_id = dest_div_id)
+
+def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', value_format = '%.2f', field_caption = '', ticksuffix = '', width = 700, height=500):
     import warnings
-    warnings.warn('shaded_scatterplot is likely deprecated and plotly_scatter_plot with "color_col" can be used directly instead')
+    warnings.warn('shaded_scatter is deprecated and scatter with "color_col" can be used directly instead')
     
     hover_text = []
     item_format = '<br>%s' + (' ' + field_caption if field_caption else '') + ': ' + value_format
@@ -211,8 +231,8 @@ def shaded_scatterplot(values_df, x_item, y_item, color_item = None, title = '',
                                   'hovermode': 'closest'
                                  }, image_width=width, image_height=height)
 
-def plotly_interactive_plot(dataframe, layout = dict(), column_settings = dict(), all_columns_settings = dict(), x_and_y = True, 
-                     width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], defer = False, dest_div_id = None):
+def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_settings = dict(), x_and_y = True, 
+                     width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], dest_div_id = None):
     chart_data = []
     index = dataframe.index
     
@@ -248,17 +268,10 @@ def plotly_interactive_plot(dataframe, layout = dict(), column_settings = dict()
         
     data_layout = {'data': chart_data + custom_chart_data, 'layout': layout}
 
-    if defer:
-        return partial(iplot, 
-                       data_layout, 
-                       image_width = width, 
-                       image_height = height, 
-                       config = default_config)
-    else:
-        return iplot(data_layout, 
-                     image_width = width, 
-                     image_height = height, 
-                     config = default_config, 
-                     dest_div_id = dest_div_id)
+    return _PlotlyChartBundle(data_layout, 
+                              width = width, 
+                              height = height, 
+                              config = default_config, 
+                              dest_div_id = dest_div_id)
 
 

@@ -401,7 +401,7 @@ def _plot_html(figure_or_data, config, validate, default_width,
 
 def iplot(figure_or_data, show_link=False, link_text='Export to plot.ly',
           validate=True, image=None, filename='plot_image', image_width=800,
-          image_height=600, config=None, dest_div_id=None):
+          image_height=600, config=None, dest_div_id=None, return_bundle=False):
     """
     Draw plotly graphs inside an IPython or Jupyter notebook without
     connecting to an external server.
@@ -487,6 +487,9 @@ def iplot(figure_or_data, show_link=False, link_text='Export to plot.ly',
         display_bundle['text/html'] = plot_html + resize_script
         display_bundle['text/vnd.plotly.v1+html'] = plot_html + resize_script
 
+    if return_bundle:
+        return display_bundle
+        
     ipython_display.display(display_bundle, raw=True)
 
     if image:
