@@ -201,8 +201,7 @@ def scatter(df, x_col, y_col,
                               dest_div_id = dest_div_id)
 
 def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', value_format = '%.2f', field_caption = '', ticksuffix = '', width = 700, height=500):
-    import warnings
-    warnings.warn('shaded_scatter is deprecated and scatter with "color_col" can be used directly instead')
+    raise DeprecationWarning('shaded_scatter is deprecated and scatter with "color_col" can be used directly instead')
     
     hover_text = []
     item_format = '<br>%s' + (' ' + field_caption if field_caption else '') + ': ' + value_format
