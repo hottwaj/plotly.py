@@ -18,7 +18,10 @@ display(HTML("""
 .table-no-border {
     border: none !important;
 }
-</style>"""))   
+</style>"""))
+
+import plotly.io as pio
+pio.renderers.default = 'iframe'  #apparently faster?
     
 DEFAULT_COLORS = [
     '#1f77b4',  # muted blue
