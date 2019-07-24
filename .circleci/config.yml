@@ -1,464 +1,198 @@
-version: 2
+version: 2.0
+
+# Inspired by:
+# https://github.com/CircleCI-Public/circleci-demo-workflows/blob/workspace-forwarding/.circleci/config.yml
+# https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
+#
+# For list of official CircleCI node.js images, go to:
+# https://hub.docker.com/r/circleci/node/tags/
 
 jobs:
-  # Core
-  python-2.7-core:
+  build:
     docker:
-      - image: circleci/python:2.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_27: python2.7
-
+      - image: circleci/node:10.9.0
+    working_directory: ~/plotly.js
     steps:
       - checkout
       - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py27-core'
-          no_output_timeout: 20m
-
-  python-3.4-core:
-    docker:
-      - image: circleci/python:3.4-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_34: python3.4
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py34-core'
-          no_output_timeout: 20m
-
-  python-3.5-core:
-    docker:
-      - image: circleci/python:3.5-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_35: python3.5
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py35-core'
-          no_output_timeout: 20m
-
-  python-3.6-core:
-    docker:
-      - image: circleci/python:3.6-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_36: python3.6
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py36-core'
-          no_output_timeout: 20m
-
-  python-3.7-core:
-    docker:
-      - image: circleci/python:3.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_37: python3.7
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py37-core'
-          no_output_timeout: 20m
-
-  # Optional
-  python-2.7-optional:
-    docker:
-      - image: circleci/python:2.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_27: python2.7
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Install npm dependencies
-          command: cd plotly/tests/test_optional/test_jupyter && npm install
-          no_output_timeout: 20m
-      - run:
-          name: Test with tox
-          command: 'tox -e py27-optional'
-          no_output_timeout: 20m
-
-  python-3.4-optional:
-    docker:
-      - image: circleci/python:3.4-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_34: python3.4
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Install npm dependencies
-          command: cd plotly/tests/test_optional/test_jupyter && npm install
-          no_output_timeout: 20m
-      - run:
-          name: Test with tox
-          command: 'tox -e py34-optional'
-          no_output_timeout: 20m
-
-  python-3.5-optional:
-    docker:
-      - image: circleci/python:3.5-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_35: python3.5
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Install npm dependencies
-          command: cd plotly/tests/test_optional/test_jupyter && npm install
-          no_output_timeout: 20m
-      - run:
-          name: Test with tox
-          command: 'tox -e py35-optional'
-          no_output_timeout: 20m
-
-  python-3.6-optional:
-    docker:
-      - image: circleci/python:3.6-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_36: python3.6
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Install npm dependencies
-          command: cd plotly/tests/test_optional/test_jupyter && npm install
-          no_output_timeout: 20m
-      - run:
-          name: Test with tox
-          command: 'tox -e py36-optional'
-          no_output_timeout: 20m
-
-  python-3.7-optional:
-    docker:
-      - image: circleci/python:3.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_37: python3.7
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Install npm dependencies
-          command: cd plotly/tests/test_optional/test_jupyter && npm install
-          no_output_timeout: 20m
-      - run:
-          name: Test with tox
-          command: 'tox -e py37-optional'
-          no_output_timeout: 20m
-
-  # Plot.ly
-  python-2.7-plot_ly:
-    docker:
-      - image: circleci/python:2.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_27: python2.7
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py27-plot_ly'
-          no_output_timeout: 20m
-
-  python-3.4-plot_ly:
-    docker:
-      - image: circleci/python:3.4-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_34: python3.4
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py34-plot_ly'
-          no_output_timeout: 20m
-
-  python-3.7-plot_ly:
-    docker:
-      - image: circleci/python:3.7-stretch-node-browsers
-        environment:
-          PLOTLY_TOX_PYTHON_37: python3.7
-
-    steps:
-      - checkout
-      - run:
-          name: Install tox
-          command: 'sudo pip install tox'
-      - run:
-          name: Test with tox
-          command: 'tox -e py37-plot_ly'
-          no_output_timeout: 20m
-
-  python-2-7-orca:
-    docker:
-      - image: circleci/node:10.9-stretch-browsers
-        environment:
-          PYTHON_VERSION: 2.7
-
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - conda-27-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
-      - run:
-          name: Create conda environment
-          command: .circleci/create_conda_optional_env.sh
-
-      - save_cache:
-          key: conda-27-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
-          paths:
-            - /home/circleci/miniconda/
-      - run:
-          name: Run Tests
+          name: Install dependencies
           command: |
-            . /home/circleci/miniconda/etc/profile.d/conda.sh
-            conda activate circle_optional
-            pytest --disable-warnings plotly/tests/test_core
-            pytest plotly/tests/test_orca
-
-      - store_artifacts:
-            path: plotly/tests/test_orca/images/linux/failed
-
-  python-3-5-orca:
-    docker:
-      - image: circleci/node:10.9-stretch-browsers
-        environment:
-          PYTHON_VERSION: 3.5
-
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - conda-35-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
+            npm ci
       - run:
-          name: Create conda environment
-          command: .circleci/create_conda_optional_env.sh
-
-      - save_cache:
-          key: conda-35-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
-          paths:
-            - /home/circleci/miniconda/
-      - run:
-          name: Run Tests
+          name: List dependency versions
           command: |
-            . /home/circleci/miniconda/etc/profile.d/conda.sh
-            conda activate circle_optional
-            pytest --disable-warnings plotly/tests/test_core
-            pytest plotly/tests/test_orca
-
-      - store_artifacts:
-            path: plotly/tests/test_orca/images/linux/failed
-
-  python-3-7-orca:
-    docker:
-      - image: circleci/node:10.9-stretch-browsers
-        environment:
-          PYTHON_VERSION: 3.7
-
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - conda-37-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
+            echo "npm: $(npm --version)"
+            echo "node: $(node --version)"
+            npm ls || true
       - run:
-          name: Create conda environment
-          command: .circleci/create_conda_optional_env.sh
-
-      - save_cache:
-          key: conda-37-v1-{{ checksum ".circleci/create_conda_optional_env.sh" }}
-          paths:
-            - /home/circleci/miniconda/
-      - run:
-          name: Run Tests
+          name: Pretest
           command: |
-            . /home/circleci/miniconda/etc/profile.d/conda.sh
-            conda activate circle_optional
-            pytest --disable-warnings plotly/tests/test_core
-            pytest plotly/tests/test_orca
-
-      - store_artifacts:
-            path: plotly/tests/test_orca/images/linux/failed
-
-
-  python-2-7-conda:
-    docker:
-      - image: continuumio/miniconda3:4.5.4
-        environment:
-          PYTHON_VERSION: 2.7
-
-    steps:
-      - checkout
+            npm run pretest
+            npm run cibuild
       - run:
-          name: Create packages
-          command: .circleci/create_conda_packages.sh
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: artifacts
+          command: rm -rf .git
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - plotly.js
 
-  python-3-5-conda:
+  test-jasmine:
     docker:
-      - image: continuumio/miniconda3:4.5.4
-        environment:
-          PYTHON_VERSION: 3.5
-
+      # need '-browsers' version to test in real (xvfb-wrapped) browsers
+      - image: circleci/node:10.9.0-browsers
+    parallelism: 2
+    working_directory: ~/plotly.js
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - run:
-          name: Create packages
-          command: .circleci/create_conda_packages.sh
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: artifacts
+          name: Run jasmine tests (batch 1)
+          command: ./.circleci/test.sh jasmine
 
-  python-3-6-conda:
+  test-jasmine2:
     docker:
-      - image: continuumio/miniconda3:4.5.4
-        environment:
-          PYTHON_VERSION: 3.6
-
+      # need '-browsers' version to test in real (xvfb-wrapped) browsers
+      - image: circleci/node:10.9.0-browsers
+    parallelism: 3
+    working_directory: ~/plotly.js
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - run:
-          name: Create packages
-          command: .circleci/create_conda_packages.sh
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: artifacts
+          name: Run jasmine tests (batch 2)
+          command: ./.circleci/test.sh jasmine2
 
-  python-3-7-conda:
+  test-jasmine3:
     docker:
-      - image: continuumio/miniconda3:4.5.4
-        environment:
-          PYTHON_VERSION: 3.7
-
+      # need '-browsers' version to test in real (xvfb-wrapped) browsers
+      - image: circleci/node:10.9.0-browsers
+    working_directory: ~/plotly.js
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - run:
-          name: Create packages
-          command: .circleci/create_conda_packages.sh
-          no_output_timeout: 20m
-      - store_artifacts:
-          path: artifacts
+          name: Run jasmine tests (batch 3)
+          command: ./.circleci/test.sh jasmine3
 
+  test-image:
+    docker:
+      - image: plotly/testbed:latest
+    parallelism: 4
+    working_directory: /var/www/streambed/image_server/plotly.js/
+    steps:
+      - attach_workspace:
+          at: /var/www/streambed/image_server/
+      - run:
+          name: Run and setup container
+          command: |
+            supervisord &
+            npm run docker -- setup
+      - run:
+          name: Run image tests
+          command: ./.circleci/test.sh image
+      - store_artifacts:
+          path: build
+          destination: /
+
+  test-image2:
+    docker:
+      - image: plotly/testbed:latest
+    working_directory: /var/www/streambed/image_server/plotly.js/
+    steps:
+      - attach_workspace:
+          at: /var/www/streambed/image_server/
+      - run:
+          name: Run and setup container
+          command: |
+            supervisord &
+            npm run docker -- setup
+      - run:
+          name: Run image tests
+          command: ./.circleci/test.sh image2
+      - store_artifacts:
+          path: build
+          destination: /
+
+  test-syntax:
+    docker:
+      - image: circleci/node:10.9.0
+    working_directory: ~/plotly.js
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run syntax tests
+          command: ./.circleci/test.sh syntax
+
+  test-bundle:
+    docker:
+      # need '-browsers' version to test in real (xvfb-wrapped) browsers
+      - image: circleci/node:10.9.0-browsers
+    working_directory: ~/plotly.js
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run test-bundle
+          command: ./.circleci/test.sh bundle
+
+  publish:
+    docker:
+      - image: circleci/node:10.9.0
+    working_directory: ~/plotly.js
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Build dist/
+          command: npm run build
+      - store_artifacts:
+          path: dist
+          destination: dist
+      - run:
+          name: Pack tarball
+          command: |
+            npm pack
+            version=$(node -e "console.log(require('./package.json').version)")
+            mv plotly.js-$version.tgz plotly.js.tgz
+      - store_artifacts:
+          path: plotly.js.tgz
+          destination: /plotly.js.tgz
+      - run:
+          name: Show URLs to build files
+          command: |
+            PROJECT_NUM=45646037
+            echo https://$CIRCLE_BUILD_NUM-$PROJECT_NUM-gh.circle-artifacts.com/0/plotly.js.tgz
+            echo https://$CIRCLE_BUILD_NUM-$PROJECT_NUM-gh.circle-artifacts.com/0/dist/plotly.js
+            echo https://$CIRCLE_BUILD_NUM-$PROJECT_NUM-gh.circle-artifacts.com/0/dist/plotly.min.js
+            echo https://$CIRCLE_BUILD_NUM-$PROJECT_NUM-gh.circle-artifacts.com/0/dist/plot-schema.json
 
 workflows:
   version: 2
-  build:
+  build-and-test:
     jobs:
-
-      - python-2.7-core
-      - python-3.4-core
-      - python-3.5-core
-      - python-3.6-core
-      - python-3.7-core
-      - python-2.7-optional
-      - python-3.4-optional
-      - python-3.5-optional
-      - python-3.6-optional
-      # 3.7 optional disabled due to current shapely incompatibility
-      # - python-3.7-optional
-      - python-2.7-plot_ly
-      - python-3.4-plot_ly
-      - python-3.7-plot_ly
-      - python-2-7-orca
-      - python-3-5-orca
-      - python-3-7-orca
-
-      - python-2-7-conda:
+      - build
+      - test-bundle:
           requires:
-            - python-2.7-core
-            - python-2.7-optional
-            - python-2.7-plot_ly
-            - python-2-7-orca
-
-          filters:
-            branches:
-              only:
-                - master
-                - /release_.*/
-                - /conda_build_.*/
-
-      - python-3-5-conda:
+            - build
+      - test-jasmine:
           requires:
-            - python-3.5-core
-            - python-3.5-optional
-#            - python-3.5-plot_ly
-            - python-3-5-orca
-
-          filters:
-            branches:
-              only:
-                - master
-                - /release_.*/
-                - /conda_build_.*/
-
-      - python-3-6-conda:
+            - build
+      - test-jasmine2:
           requires:
-            - python-3.6-core
-            - python-3.6-optional
-#            - python-3.6-plot_ly
-#            - python-3-6-orca
-
-          filters:
-            branches:
-              only:
-                - master
-                - /release_.*/
-                - /conda_build_.*/
-
-      - python-3-7-conda:
+            - build
+      - test-jasmine3:
           requires:
-            - python-3.7-core
-#            - python-3.7-optional
-            - python-3.7-plot_ly
-            - python-3-7-orca
-
-          filters:
-            branches:
-              only:
-                - master
-                - /release_.*/
-                - /conda_build_.*/
+            - build
+      - test-image:
+          requires:
+            - build
+      - test-image2:
+          requires:
+            - build
+      - test-syntax:
+          requires:
+            - build
+      - publish:
+          requires:
+            - build

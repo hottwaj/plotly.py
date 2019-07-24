@@ -1,173 +1,189 @@
-# plotly.py
+<a href="https://plot.ly/javascript/"><img src="http://images.plot.ly/logo/plotlyjs-logo@2x.png" height="70"></a>
 
-<table>
-    <tr>
-        <td>Latest Release</td>
-        <td>
-            <a href="https://pypi.org/project/plotly/"/>
-            <img src="https://badge.fury.io/py/plotly.svg"/>
-        </td>
-    </tr>
-    <tr>
-        <td>PyPI Downloads</td>
-        <td>
-            <a href="https://pepy.tech/project/plotly"/>
-            <img src="https://pepy.tech/badge/plotly/month"/>
-        </td>
-    </tr>
-    <tr>
-        <td>License</td>
-        <td>
-            <a href="https://opensource.org/licenses/MIT"/>
-            <img src="https://img.shields.io/badge/License-MIT-yellow.svg"/>
-        </td>
-    </tr>
-</table>
+[![npm version](https://badge.fury.io/js/plotly.js.svg)](https://badge.fury.io/js/plotly.js)
+[![circle ci](https://circleci.com/gh/plotly/plotly.js.png?&style=shield&circle-token=1f42a03b242bd969756fc3e53ede204af9b507c0)](https://circleci.com/gh/plotly/plotly.js)
+[![MIT License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/plotly/plotly.js/blob/master/LICENSE)
 
-## Quickstart
-
-`pip install plotly "notebook>=5.3" "ipywidgets>=7.2"`
-
-Inside [Jupyter notebook](https://jupyter.org/install):
-```python
-import plotly.graph_objs as go
-fig = go.FigureWidget()
-# Display an empty figure
-fig
-```
-```python
-# Add a scatter chart
-fig.add_scatter(y=[2, 1, 4, 3])
-# Add a bar chart
-fig.add_bar(y=[1, 4, 3, 2])
-# Add a title
-fig.layout.title = 'Hello FigureWidget'
-```
-
-See the [Python documentation](https://plot.ly/python/) for more examples.
-
-Read about what's new in [plotly.py v3](https://medium.com/@plotlygraphs/introducing-plotly-py-3-0-0-7bb1333f69c6)
-
-## Overview
-[plotly.py](https://plot.ly/d3-js-for-python-and-pandas-charts/) is an interactive, open-source, and browser-based graphing library for Python :sparkles:
-
-Built on top of [plotly.js](https://github.com/plotly/plotly.js), `plotly.py` is a high-level, declarative charting library. plotly.js ships with over 30 chart types, including scientific charts, 3D graphs, statistical charts, SVG maps, financial charts, and more.
-
-`plotly.py` is [MIT Licensed](LICENSE.txt). Plotly graphs can be viewed in Jupyter notebooks, standalone HTML files, or hosted online on [plot.ly](https://plot.ly).
-
-[Contact us](https://plot.ly/products/consulting-and-oem/) for Plotly.js consulting, dashboard development, application integration, and feature additions. Sharing your graphs online or in dashboards? Consider a [plot.ly subscription](https://plot.ly/products/cloud).
+Built on top of [d3.js](http://d3js.org/) and [stack.gl](http://stack.gl/),
+plotly.js is a high-level, declarative charting library. plotly.js ships with over 40
+chart types, including scientific charts, 3D graphs, statistical charts, SVG maps, financial charts,
+and more.
 
 <p align="center">
-    <a href="https://plot.ly/python" target="_blank">
+    <a href="https://www.plot.ly/javascript" target="_blank">
     <img src="https://raw.githubusercontent.com/cldougl/plot_images/add_r_img/plotly_2017.png">
 </a></p>
 
-***
+[Contact us](https://plot.ly/products/consulting-and-oem/) for Plotly.js consulting, dashboard development, application integration, and feature additions.
 
-- [Online Documentation](https://plot.ly/python)
-- [Contributing](contributing.md)
-- [Changelog](CHANGELOG.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Version 3 Migration Guide](migration-guide.md)
-- [New! Announcing Dash](https://medium.com/@plotlygraphs/introducing-dash-5ecf7191b503)
-- [Community](https://community.plot.ly/c/api/python)
+## Table of contents
 
-***
+* [Quick start options](#quick-start-options)
+* [Modules](#modules)
+* [Building plotly.js](#building-plotlyjs)
+* [Bugs and feature requests](#bugs-and-feature-requests)
+* [Documentation](#documentation)
+* [Contributing](#contributing)
+* [Community](#community)
+* [Clients for R, Python, Node, and MATLAB](#clients-for-r-python-node-and-matlab)
+* [Creators](#creators)
+* [Copyright and license](#copyright-and-license)
 
-## Installation
 
-plotly.py may be installed using pip...
-```
-pip install plotly==3.6.1
-```
+## Quick start options
 
-or conda.
-```
-conda install -c plotly plotly=3.6.1
-```
+### Install with npm
 
-### Jupyter Notebook Support
-For use in the Jupyter Notebook, install the `notebook` and `ipywidgets`
-packages using pip...
-
-```
-pip install "notebook>=5.3" "ipywidgets>=7.2"
+```bash
+npm install plotly.js-dist
 ```
 
-or conda.
+and import plotly.js as `import Plotly from 'plotly.js-dist';` or `var Plotly = require('plotly.js-dist');`.
 
-```
-conda install "notebook>=5.3" "ipywidgets>=7.2"
-```
+### Use the plotly.js CDN hosted by Fastly
 
-### JupyterLab Support (Python 3.5+)
-For use in JupyterLab, install the `jupyterlab` and `ipywidgets`
-packages using pip... 
+```html
+<!-- Latest compiled and minified plotly.js JavaScript -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-```
-pip install jupyterlab==0.35 "ipywidgets>=7.2"
-```
+<!-- OR use a specific plotly.js release (e.g. version 1.5.0) -->
+<script src="https://cdn.plot.ly/plotly-1.5.0.min.js"></script>
 
-or conda.
-
-```
-conda install jupyterlab=0.35 "ipywidgets>=7.2"
+<!-- OR an un-minified version is also available -->
+<script src="https://cdn.plot.ly/plotly-latest.js" charset="utf-8"></script>
 ```
 
-Then run the following commands to install the required JupyterLab extensions:
-```
-# Avoid "JavaScript heap out of memory" errors during extension installation
-# (OS X/Linux)
-export NODE_OPTIONS=--max-old-space-size=4096
-# (Windows)
-set NODE_OPTIONS=--max-old-space-size=4096
+and use the `Plotly` object in the window scope.
 
-# Jupyter widgets extension
-jupyter labextension install @jupyter-widgets/jupyterlab-manager@0.38 --no-build
+### Download the latest release
 
-# FigureWidget support
-jupyter labextension install plotlywidget@0.7.1 --no-build
+[Latest Release on GitHub](https://github.com/plotly/plotly.js/releases/)
 
-# offline iplot support
-jupyter labextension install @jupyterlab/plotly-extension@0.18.1 --no-build
+and use the plotly.js `dist` file(s). More info [here](https://github.com/plotly/plotly.js/blob/master/dist/README.md).
 
-# JupyterLab chart editor support (optional)
-jupyter labextension install jupyterlab-chart-editor@1.0 --no-build
+#### Read the [Getting started page](https://plot.ly/javascript/getting-started/) for more examples.
 
-# Build extensions (must be done to activate extensions since --no-build is used above)
-jupyter lab build
 
-# Unset NODE_OPTIONS environment variable
-# (OS X/Linux)
-unset NODE_OPTIONS
-# (Windows)
-set NODE_OPTIONS=
-```
+## Modules
 
-### Static Image Export
-plotly.py supports static image export using the `to_image` and `write_image`
-functions in the `plotly.io` package. This functionality requires the
-installation of the plotly [orca](https://github.com/plotly/orca) command line utility and the
-[`psutil`](https://github.com/giampaolo/psutil) Python package.
+Starting in `v1.15.0`, plotly.js ships with several _partial_ bundles (more info [here](https://github.com/plotly/plotly.js/blob/master/dist/README.md#partial-bundles)).
 
-These dependencies can both be installed using conda:
-```
-conda install -c plotly plotly-orca psutil
+Starting in `v1.39.0`, plotly.js publishes _distributed_ npm packages with no dependencies. For example, run `npm install plotly.js-geo-dist` and add `import Plotly from 'plotly.js-geo-dist';` to your code to start using the plotly.js geo package.
+
+If none of the distributed npm packages meet your needs, and you would like to manually pick which plotly.js modules to include, you'll first need to run `npm install plotly.js` and then create a *custom* bundle by using `plotly.js/lib/core`, and loading only the trace types that you need (e.g. `pie` or `choropleth`). The recommended way to do this is by creating a *bundling file*. For example, in CommonJS:
+
+```javascript
+// in custom-plotly.js
+var Plotly = require('plotly.js/lib/core');
+
+// Load in the trace types for pie, and choropleth
+Plotly.register([
+    require('plotly.js/lib/pie'),
+    require('plotly.js/lib/choropleth')
+]);
+
+module.exports = Plotly;
 ```
 
-Or, `psutil` can be installed using pip...
+Then elsewhere in your code:
+
+```javascript
+var Plotly = require('./path/to/custom-plotly');
 ```
-pip install psutil
+
+To learn more about the plotly.js module architecture, refer to our [modularizing monolithic JS projects](https://plot.ly/javascript/modularizing-monolithic-javascript-projects/) post.
+
+#### Non-ascii characters
+
+Important: the plotly.js code base contains some non-ascii characters. Therefore, please make sure to set the `charset` attribute to `"utf-8"` in the script tag that imports your plotly.js bundle. For example:
+
+```html
+<script src="my-plotly-bundle.js" charset="utf-8"></script>
 ```
 
-and orca can be installed according to the instructions in the [orca README](https://github.com/plotly/orca).
+## Building plotly.js
 
-## Migration
-If you're migrating from plotly.py version 2, please check out the [migration guide](migration-guide.md)
+Building instructions using `webpack`, `browserify` and other build frameworks are in [`BUILDING.md`](https://github.com/plotly/plotly.js/blob/master/BUILDING.md)
 
-## Copyright and Licenses
-Code and documentation copyright 2018 Plotly, Inc.
+## Bugs and feature requests
 
-Code released under the [MIT license](LICENSE.txt).
+Have a bug or a feature request? Please first read the [issues guidelines](https://github.com/plotly/plotly.js/blob/master/CONTRIBUTING.md#opening-issues).
+
+## Documentation
+
+Official plotly.js documentation is hosted on [plot.ly/javascript](https://plot.ly/javascript).
+
+These pages are generated by the Plotly [documentation repo](https://github.com/plotly/documentation/tree/gh-pages) built with [Jekyll](http://jekyllrb.com) and publicly hosted on GitHub Pages.
+For more info about contributing to Plotly documentation, please read through [contributing guidelines](https://github.com/plotly/documentation/blob/source/Contributing.md).
+
+You can also suggest new documentation examples by submitting a [Codepen](http://codepen.io/tag/plotly/) on community.plot.ly with tag [`plotly-js`](http://community.plot.ly/c/plotly-js).
+
+## Contributing
+
+Please read through our [contributing guidelines](https://github.com/plotly/plotly.js/blob/master/CONTRIBUTING.md). Included are directions for opening issues, using plotly.js in your project and notes on development.
+
+## Community
+
+* Follow [@plotlygraphs](https://twitter.com/plotlygraphs) on Twitter for the latest Plotly news.
+* Follow [@plotly_js](https://twitter.com/plotly_js) on Twitter for plotly.js release updates.
+* Implementation help may be found on community.plot.ly (tagged [`plotly-js`](http://community.plot.ly/c/plotly-js)) or
+  on Stack Overflow (tagged [`plotly`](https://stackoverflow.com/questions/tagged/plotly)).
+* Developers should use the keyword `plotly` on packages which modify or add to the functionality of plotly.js when distributing through [npm](https://www.npmjs.com/browse/keyword/plotly).
+* Direct developer email support can be purchased through a [Plotly Support Plan](https://support.plot.ly/libraries/javascript).
+
+## Versioning
+
+This project is maintained under the [Semantic Versioning guidelines](http://semver.org/).
+
+See the [Releases section](https://github.com/plotly/plotly.js/releases) of our GitHub project for changelogs for each release version of plotly.js.
+
+## Clients for R, Python, Node, and MATLAB
+
+Open-source clients to the plotly.js APIs are available at these links:
+
+|   | GitHub repo | Getting started |
+|---|--------|---------|
+|**R / RStudio**| [ropensci/plotly](https://github.com/ropensci/plotly) | [plot.ly/r/getting-started](https://plot.ly/r/getting-started) |
+|**Python / Pandas / IPython notebook**| [plotly/plotly.py](https://github.com/plotly/plotly.py) | [plot.ly/python/getting-started](https://plot.ly/python/getting-started) |
+|**MATLAB**| [plotly/matlab-api](https://github.com/plotly/matlab-api) | [plot.ly/matlab/getting-started](https://plot.ly/matlab/getting-started) |
+|**node.js / Tonicdev / Jupyter notebook**| [plotly/plotly-notebook-js](https://github.com/plotly/plotly-notebook-js) | |
+|**node.js cloud client**| [plotly/plotly-nodejs](https://github.com/plotly/plotly-nodejs) | [plot.ly/nodejs/getting-started](https://plot.ly/nodejs/getting-started) |
+|**Julia**| [plotly/Plotly.jl](https://github.com/plotly/Plotly.jl) | [plot.ly/julia/getting-started](https://plot.ly/julia/getting-started) |
+
+plotly.js charts can also be created and saved online for free at [plot.ly/create](https://plot.ly/create).
+
+## Creators
+
+### Active
+
+|   | Github | Twitter |
+|---|--------|---------|
+|**Alex C. Johnson**| [@alexcjohnson](https://github.com/alexcjohnson) | |
+|**Étienne Tétreault-Pinard**| [@etpinard](https://github.com/etpinard) | [@etpinard](https://twitter.com/etpinard) |
+|**Antoine Roy-Gobeil** | [@antoinerg](https://github.com/antoinerg) | |
+|**Mojtaba Samimi** | [@archmoj](https://github.com/archmoj) | [@solarchvision](https://twitter.com/solarchvision) |
+
+### Hall of Fame
+
+|   | Github | Twitter |
+|---|--------|---------|
+|**Mikola Lysenko**| [@mikolalysenko](https://github.com/mikolalysenko) | [@MikolaLysenko](https://twitter.com/MikolaLysenko) |
+|**Ricky Reusser**| [@rreusser](https://github.com/rreusser) | [@rickyreusser](https://twitter.com/rickyreusser) |
+|**Dmitry Yv.** | [@dy](https://github.com/dy) | [@DimaYv](https://twitter.com/dimayv)|
+|**Robert Monfera**| [@monfera](https://github.com/monfera) | [@monfera](https://twitter.com/monfera) |
+|**Robert Möstl** | [@rmoestl](https://github.com/rmoestl) | [@rmoestl](https://twitter.com/rmoestl) |
+|**Nicolas Riesco**| [@n-riesco](https://github.com/n-riesco) | |
+|**Miklós Tusz**| [@mdtusz](https://github.com/mdtusz) | [@mdtusz](https://twitter.com/mdtusz)|
+|**Chelsea Douglas**| [@cldougl](https://github.com/cldougl) | |
+|**Ben Postlethwaite**| [@bpostlethwaite](https://github.com/bpostlethwaite) | |
+|**Chris Parmer**| [@chriddyp](https://github.com/chriddyp) | |
+|**Alex Vados**| [@alexander-daniel](https://github.com/alexander-daniel) | |
+
+
+## Copyright and license
+
+Code and documentation copyright 2019 Plotly, Inc.
+
+Code released under the [MIT license](https://github.com/plotly/plotly.js/blob/master/LICENSE).
 
 Docs released under the [Creative Commons license](https://github.com/plotly/documentation/blob/source/LICENSE).
