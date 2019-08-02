@@ -303,6 +303,7 @@ def iplot(
     config=None,
     auto_play=True,
     animation_opts=None,
+    return_bundle=False,
 ):
     """
     Draw plotly graphs inside an IPython or Jupyter notebook
@@ -388,14 +389,18 @@ def iplot(
     )
 
     # Show figure
-    pio.show(
+    maybe_bundle = pio.show(
         figure,
         validate=validate,
         config=config,
         auto_play=auto_play,
         post_script=post_script,
         animation_opts=animation_opts,
+        return_bundle=return_bundle
     )
+
+    if return_bundle:
+        return maybe_bundle
 
 
 def plot(

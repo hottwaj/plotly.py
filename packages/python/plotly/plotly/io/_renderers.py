@@ -345,7 +345,7 @@ del RenderersConfig
 
 
 # Show
-def show(fig, renderer=None, validate=True, **kwargs):
+def show(fig, renderer=None, validate=True, return_bundle=False, **kwargs):
     """
     Show a figure using either the default renderer(s) or the renderer(s)
     specified by the renderer argument
@@ -383,7 +383,10 @@ def show(fig, renderer=None, validate=True, **kwargs):
                 "Mime type rendering requires nbformat>=4.2.0 but it is not installed"
             )
 
-        ipython_display.display(bundle, raw=True)
+        if return_bundle:
+            return bundle
+        else:
+            ipython_display.display(bundle, raw=True)
 
     # external renderers
     renderers._perform_external_rendering(fig_dict, renderers_string=renderer, **kwargs)

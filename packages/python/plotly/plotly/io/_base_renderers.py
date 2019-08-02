@@ -524,7 +524,9 @@ class IFrameRenderer(MimetypeRenderer):
 
     mime type: 'text/html'
     """
-
+    
+    _figure_count = 0
+    
     def __init__(
         self,
         config=None,
@@ -560,10 +562,11 @@ class IFrameRenderer(MimetypeRenderer):
 
         # Build filename using ipython cell number
         ip = IPython.get_ipython()
-        cell_number = list(ip.history_manager.get_tail(1))[0][1] + 1
+
+        IFrameRenderer._figure_count += 1
         dirname = "iframe_figures"
         filename = "{dirname}/figure_{cell_number}.html".format(
-            dirname=dirname, cell_number=cell_number
+            dirname=dirname, cell_number=IFrameRenderer._figure_count
         )
 
         # Make directory for
