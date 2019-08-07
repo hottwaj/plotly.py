@@ -3,6 +3,7 @@ import numpy
 import pandas
 import copy
 import uuid
+from past.builtins import basestring    # pip install future
 
 from functools import partial, reduce
 
@@ -127,6 +128,7 @@ def scatter(df, x_col, y_col,
                      groups_col = None, tooltip_cols = [], group_order = None, 
                      layout = dict(), series_dict = dict(), x_order = [], group_colours = dict(),
                      color_col = None, size_col = None,
+                     scatter_type = 'scatter',  #could be changed to e.g. scattergl
                      width = 600, height = 400):
     pl_data = []
     if groups_col is not None and color_col is not None:
@@ -151,14 +153,16 @@ def scatter(df, x_col, y_col,
         
     def _process_group(grp, grp_vals):
         line_dict = {
-          'x': list(xvals[grp_vals]),
-          'y': list(yvals[grp_vals]),
+          'x': xvals[grp_vals].values,
+          'y': yvals[grp_vals].values,
           'mode': 'markers',
-          'type': 'scatter',
+          'type': scatter_type,
           'name': grp,
-          'text': ['<br>'.join(['%s: %s' % (ttc, df.iloc[row][ttc]) for ttc in tooltip_cols]) for row in numpy.nonzero(grp_vals)[0]],
           'marker': { 'size': 7 }
         }
+        if tooltip_cols:
+            line_dict['text'] = ['<br>'.join(['%s: %s' % (ttc, df.iloc[row][ttc]) for ttc in tooltip_cols]) 
+                                 for row in numpy.nonzero(grp_vals)[0]]
         line_dict = dict_merge(line_dict, series_dict)
 
         marker_dict = line_dict['marker']
@@ -166,17 +170,18 @@ def scatter(df, x_col, y_col,
             marker_dict['color'] = group_colours[grp]
             
         if color_col is not None:
-            marker_dict['color'] = list(df[color_col])
+            marker_dict['color'] = df[color_col].values
             marker_dict['colorbar'] = {'title': color_col} #' '.join([color_col, field_caption]), 'ticksuffix': ticksuffix}
 
         if size_col is not None:
-            marker_dict['size'] = list(df[size_col])
+            marker_dict['size'] = df[size_col].to_list()
                                    
         if x_order:
             indexes = [x_order.index(x) for x in line_dict['x']]
             line_dict['x'] = [v for (i,v) in sorted(zip(indexes, line_dict['x']))]
             line_dict['y'] = [v for (i,v) in sorted(zip(indexes, line_dict['y']))]
-            line_dict['text'] = [v for (i,v) in sorted(zip(indexes, line_dict['text']))]
+            if 'text' in line_dict:
+                line_dict['text'] = [v for (i,v) in sorted(zip(indexes, line_dict['text']))]
         pl_data.append(line_dict)          
         
     if groups_col is not None:
@@ -235,9 +240,9 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
             "name": colname
         }
         na_mask = ~pandas.isnull(vals)
-        data = list(vals[na_mask])
+        data = vals[na_mask].values
         if x_and_y:
-            coldata['x'] = list(index[na_mask])
+            coldata['x'] = index[na_mask].values
             coldata['y'] = data
         else:
             coldata['x'] = data
@@ -248,7 +253,7 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
             coldata.update(column_settings[colname])
                         
         if colname in text_dataframe and 'text' not in coldata:
-            coldata['text'] = list(text_dataframe.loc[na_mask, colname])
+            coldata['text'] = text_dataframe.loc[na_mask, colname].values
         chart_data.append(coldata)
        
     if isinstance(dataframe, pandas.DataFrame):
