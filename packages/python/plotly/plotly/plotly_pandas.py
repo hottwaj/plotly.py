@@ -231,13 +231,14 @@ def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', val
                                  }, image_width=width, image_height=height)
 
 def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_settings = dict(), x_and_y = True, 
-                     width = 800, height = 500, text_dataframe = dict(), custom_chart_data = []):
+                     width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], col_level_separator = ': '):
     chart_data = []
     index = dataframe.index
     
     def process_column(colname, vals):
+        cleaned_colname = col_level_separator.join([str(v) for v in colname]) if isinstance(colname, tuple) else colname
         coldata = {
-            "name": colname
+            "name": cleaned_colname
         }
         na_mask = ~pandas.isnull(vals)
         data = vals[na_mask].values
