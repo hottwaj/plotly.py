@@ -59,8 +59,11 @@ def charts_table(charts, cols):
                     layout = chart.data_layout['layout']
                     layout['width'] = chart.width
                     layout['height'] = chart.height
-                table_content += '<td class="table-no-border">%s</td>' \
-                                 % chart._repr_mimebundle_()['text/html']
+                bundle = chart._repr_mimebundle_()
+                bundle_content = bundle.get('text/html', bundle.get('image/svg+xml'))
+                if bundle_content is None:
+                    raise ValueError('No html or svg bundle available - check value of plotly.pio.renderers.default')
+                table_content += '<td class="table-no-border">%s</td>' % bundle_content
         table_content += '</tr>'
     table_content += '</table>'
 
@@ -234,6 +237,8 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
                      width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], col_level_separator = ': '):
     chart_data = []
     index = dataframe.index
+    if isinstance(index, pandas.DatetimeIndex):
+        index = pandas.Index(index.date)
     
     def process_column(colname, vals):
         cleaned_colname = col_level_separator.join([str(v) for v in colname]) if isinstance(colname, tuple) else colname
