@@ -127,6 +127,27 @@ class _PlotlyChartBundle(object):
 
         return bundle
         
+    def set_title(self, title):
+        self.data_layout['layout']['title'] = title
+        return self
+
+    def _get_or_create_subdict(self, path):
+        d = self.data_layout
+        for k in path:
+            if k not in d:
+                d[k] = {}
+            d = d[k]
+            
+        return d
+            
+    def set_xlabel(self, title):
+        self._get_or_create_subdict(('layout', 'xaxis'))['title'] = title
+        return self
+    
+    def set_ylabel(self, title):
+        self._get_or_create_subdict(('layout', 'yaxis'))['title'] = title
+        return self
+                
 def scatter(df, x_col, y_col, 
                      groups_col = None, tooltip_cols = [], group_order = None, 
                      layout = dict(), series_dict = dict(), x_order = [], group_colours = dict(),
