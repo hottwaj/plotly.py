@@ -147,7 +147,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -316,6 +315,20 @@ import _plotly_utils.basevalidators
 class ShowscaleValidator(_plotly_utils.basevalidators.BooleanValidator):
     def __init__(self, plotly_name="showscale", parent_name="volume", **kwargs):
         super(ShowscaleValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class ShowlegendValidator(_plotly_utils.basevalidators.BooleanValidator):
+    def __init__(self, plotly_name="showlegend", parent_name="volume", **kwargs):
+        super(ShowlegendValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "calc"),
@@ -498,6 +511,20 @@ class LightingValidator(_plotly_utils.basevalidators.CompoundValidator):
 import _plotly_utils.basevalidators
 
 
+class LegendgroupValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="legendgroup", parent_name="volume", **kwargs):
+        super(LegendgroupValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "style"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
 class IsominValidator(_plotly_utils.basevalidators.NumberValidator):
     def __init__(self, plotly_name="isomin", parent_name="volume", **kwargs):
         super(IsominValidator, self).__init__(
@@ -545,7 +572,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs
@@ -902,12 +928,13 @@ class ColorBarValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display

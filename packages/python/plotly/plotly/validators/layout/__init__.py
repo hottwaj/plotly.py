@@ -131,12 +131,13 @@ class YAxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             hoverformat
                 Sets the hover text formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display
@@ -324,12 +325,13 @@ class YAxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display
@@ -559,12 +561,13 @@ class XAxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             hoverformat
                 Sets the hover text formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display
@@ -758,12 +761,13 @@ class XAxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display
@@ -1089,6 +1093,38 @@ class UpdatemenusValidator(_plotly_utils.basevalidators.CompoundArrayValidator):
 import _plotly_utils.basevalidators
 
 
+class UniformtextValidator(_plotly_utils.basevalidators.CompoundValidator):
+    def __init__(self, plotly_name="uniformtext", parent_name="layout", **kwargs):
+        super(UniformtextValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            data_class_str=kwargs.pop("data_class_str", "Uniformtext"),
+            data_docs=kwargs.pop(
+                "data_docs",
+                """
+            minsize
+                Sets the minimum text size between traces of
+                the same type.
+            mode
+                Determines how the font size for various text
+                elements are uniformed between each trace type.
+                If the computed text sizes were smaller than
+                the minimum size defined by
+                `uniformtext.minsize` using "hide" option hides
+                the text; and using "show" option shows the
+                text without further downscaling. Please note
+                that if the size defined by `minsize` is
+                greater than the font size defined by trace,
+                then the `minsize` is used.
+""",
+            ),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
 class UirevisionValidator(_plotly_utils.basevalidators.AnyValidator):
     def __init__(self, plotly_name="uirevision", parent_name="layout", **kwargs):
         super(UirevisionValidator, self).__init__(
@@ -1096,6 +1132,20 @@ class UirevisionValidator(_plotly_utils.basevalidators.AnyValidator):
             parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "none"),
             role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TreemapcolorwayValidator(_plotly_utils.basevalidators.ColorlistValidator):
+    def __init__(self, plotly_name="treemapcolorway", parent_name="layout", **kwargs):
+        super(TreemapcolorwayValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "style"),
             **kwargs
         )
 
@@ -1986,7 +2036,10 @@ class MarginValidator(_plotly_utils.basevalidators.CompoundValidator):
                 "data_docs",
                 """
             autoexpand
-
+                Turns on/off margin expansion computations.
+                Legends, colorbars, updatemenus, sliders, axis
+                rangeselector and rangeslider are allowed to
+                push the margins by defaults.
             b
                 Sets the bottom margin (in px).
             l
@@ -2020,7 +2073,11 @@ class MapboxValidator(_plotly_utils.basevalidators.CompoundValidator):
                 Sets the mapbox access token to be used for
                 this mapbox map. Alternatively, the mapbox
                 access token can be set in the configuration
-                options under `mapboxAccessToken`.
+                options under `mapboxAccessToken`. Note that
+                accessToken are only required when `style` (e.g
+                with values : basic, streets, outdoors, light,
+                dark, satellite, satellite-streets ) and/or a
+                layout layer references the Mapbox server.
             bearing
                 Sets the bearing angle of the map in degrees
                 counter-clockwise from North (mapbox.bearing).
@@ -2044,9 +2101,34 @@ class MapboxValidator(_plotly_utils.basevalidators.CompoundValidator):
                 where 0 means perpendicular to the surface of
                 the map) (mapbox.pitch).
             style
-                Sets the Mapbox map style. Either input one of
-                the default Mapbox style names or the URL to a
-                custom style or a valid Mapbox style JSON.
+                Defines the map layers that are rendered by
+                default below the trace layers defined in
+                `data`, which are themselves by default
+                rendered below the layers defined in
+                `layout.mapbox.layers`.  These layers can be
+                defined either explicitly as a Mapbox Style
+                object which can contain multiple layer
+                definitions that load data from any public or
+                private Tile Map Service (TMS or XYZ) or Web
+                Map Service (WMS) or implicitly by using one of
+                the built-in style objects which use WMSes
+                which do not require any access tokens, or by
+                using a default Mapbox style or custom Mapbox
+                style URL, both of which require a Mapbox
+                access token  Note that Mapbox access token can
+                be set in the `accesstoken` attribute or in the
+                `mapboxAccessToken` config option.  Mapbox
+                Style objects are of the form described in the
+                Mapbox GL JS documentation available at
+                https://docs.mapbox.com/mapbox-gl-js/style-spec
+                The built-in plotly.js styles objects are:
+                open-street-map, white-bg, carto-positron,
+                carto-darkmatter, stamen-terrain, stamen-toner,
+                stamen-watercolor  The built-in Mapbox styles
+                are: basic, streets, outdoors, light, dark,
+                satellite, satellite-streets  Mapbox style URLs
+                are of the form:
+                mapbox://mapbox.mapbox-<name>-<version>
             uirevision
                 Controls persistence of user-driven changes in
                 the view: `center`, `zoom`, `bearing`, `pitch`.
@@ -2072,7 +2154,8 @@ class LegendValidator(_plotly_utils.basevalidators.CompoundValidator):
                 "data_docs",
                 """
             bgcolor
-                Sets the legend background color.
+                Sets the legend background color. Defaults to
+                `layout.paper_bgcolor`.
             bordercolor
                 Sets the color of the border enclosing the
                 legend.
@@ -2102,6 +2185,9 @@ class LegendValidator(_plotly_utils.basevalidators.CompoundValidator):
                 size on the graph.
             orientation
                 Sets the orientation of the legend.
+            title
+                plotly.graph_objects.layout.legend.Title
+                instance or dict with compatible properties
             tracegroupgap
                 Sets the amount of vertical space (in px)
                 between legend groups.
@@ -2124,18 +2210,34 @@ class LegendValidator(_plotly_utils.basevalidators.CompoundValidator):
                 respect to their associated text.
             x
                 Sets the x position (in normalized coordinates)
-                of the legend.
+                of the legend. Defaults to 1.02 for vertical
+                legends and defaults to 0 for horizontal
+                legends.
             xanchor
                 Sets the legend's horizontal position anchor.
                 This anchor binds the `x` position to the
                 "left", "center" or "right" of the legend.
+                Value "auto" anchors legends to the right for
+                `x` values greater than or equal to 2/3,
+                anchors legends to the left for `x` values less
+                than or equal to 1/3 and anchors legends with
+                respect to their center otherwise.
             y
                 Sets the y position (in normalized coordinates)
-                of the legend.
+                of the legend. Defaults to 1 for vertical
+                legends, defaults to "-0.1" for horizontal
+                legends on graphs w/o range sliders and
+                defaults to 1.1 for horizontal legends on graph
+                with one or multiple range sliders.
             yanchor
                 Sets the legend's vertical position anchor This
                 anchor binds the `y` position to the "top",
-                "middle" or "bottom" of the legend.
+                "middle" or "bottom" of the legend. Value
+                "auto" anchors legends at their bottom for `y`
+                values less than or equal to 1/3, anchors
+                legends to at their top for `y` values greater
+                than or equal to 2/3 and anchors legends with
+                respect to their middle otherwise.
 """,
             ),
             **kwargs
@@ -2510,6 +2612,25 @@ class GeoValidator(_plotly_utils.basevalidators.CompoundValidator):
             domain
                 plotly.graph_objects.layout.geo.Domain instance
                 or dict with compatible properties
+            fitbounds
+                Determines if this subplot's view settings are
+                auto-computed to fit trace data. On scoped
+                maps, setting `fitbounds` leads to `center.lon`
+                and `center.lat` getting auto-filled. On maps
+                with a non-clipped projection, setting
+                `fitbounds` leads to `center.lon`,
+                `center.lat`, and `projection.rotation.lon`
+                getting auto-filled. On maps with a clipped
+                projection, setting `fitbounds` leads to
+                `center.lon`, `center.lat`,
+                `projection.rotation.lon`,
+                `projection.rotation.lat`, `lonaxis.range` and
+                `lonaxis.range` getting auto-filled. If
+                "locations", only the trace's visible locations
+                are considered in the `fitbounds` computations.
+                If "geojson", the entire trace input `geojson`
+                (if provided) is considered in the `fitbounds`
+                computations, Defaults to False.
             framecolor
                 Sets the color the frame.
             framewidth
@@ -2569,6 +2690,8 @@ class GeoValidator(_plotly_utils.basevalidators.CompoundValidator):
                 Controls persistence of user-driven changes in
                 the view (projection and center). Defaults to
                 `layout.uirevision`.
+            visible
+                Sets the default visibility of the base layers.
 """,
             ),
             **kwargs
@@ -2672,6 +2795,22 @@ class FontValidator(_plotly_utils.basevalidators.CompoundValidator):
 
 """,
             ),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class ExtendtreemapcolorsValidator(_plotly_utils.basevalidators.BooleanValidator):
+    def __init__(
+        self, plotly_name="extendtreemapcolors", parent_name="layout", **kwargs
+    ):
+        super(ExtendtreemapcolorsValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "style"),
             **kwargs
         )
 
@@ -2879,7 +3018,7 @@ class ColoraxisValidator(_plotly_utils.basevalidators.CompoundValidator):
                 value to an rgb, rgba, hex, hsl, hsv, or named
                 color string. At minimum, a mapping for the
                 lowest (0) and highest (1) values are required.
-                For example, `[[0, 'rgb(0,0,255)', [1,
+                For example, `[[0, 'rgb(0,0,255)'], [1,
                 'rgb(255,0,0)']]`. To control the bounds of the
                 colorscale in color space, use`cmin` and
                 `cmax`. Alternatively, `colorscale` may be a

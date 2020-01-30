@@ -63,7 +63,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -98,6 +97,35 @@ class TitleValidator(_plotly_utils.basevalidators.TitleValidator):
                 itself. This behavior has been deprecated.
 """,
             ),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TexttemplatesrcValidator(_plotly_utils.basevalidators.SrcValidator):
+    def __init__(self, plotly_name="texttemplatesrc", parent_name="pie", **kwargs):
+        super(TexttemplatesrcValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "none"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TexttemplateValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="texttemplate", parent_name="pie", **kwargs):
+        super(TexttemplateValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            array_ok=kwargs.pop("array_ok", True),
+            edit_type=kwargs.pop("edit_type", "plot"),
+            role=kwargs.pop("role", "info"),
             **kwargs
         )
 
@@ -217,7 +245,7 @@ class TextValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(TextValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            edit_type=kwargs.pop("edit_type", "calc"),
+            edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "data"),
             **kwargs
         )
@@ -532,6 +560,23 @@ class Label0Validator(_plotly_utils.basevalidators.NumberValidator):
 import _plotly_utils.basevalidators
 
 
+class InsidetextorientationValidator(_plotly_utils.basevalidators.EnumeratedValidator):
+    def __init__(
+        self, plotly_name="insidetextorientation", parent_name="pie", **kwargs
+    ):
+        super(InsidetextorientationValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "plot"),
+            role=kwargs.pop("role", "info"),
+            values=kwargs.pop("values", ["horizontal", "radial", "tangential", "auto"]),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
 class InsidetextfontValidator(_plotly_utils.basevalidators.CompoundValidator):
     def __init__(self, plotly_name="insidetextfont", parent_name="pie", **kwargs):
         super(InsidetextfontValidator, self).__init__(
@@ -598,7 +643,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs
@@ -846,5 +890,19 @@ class CustomdataValidator(_plotly_utils.basevalidators.DataArrayValidator):
             parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class AutomarginValidator(_plotly_utils.basevalidators.BooleanValidator):
+    def __init__(self, plotly_name="automargin", parent_name="pie", **kwargs):
+        super(AutomarginValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "plot"),
+            role=kwargs.pop("role", "info"),
             **kwargs
         )

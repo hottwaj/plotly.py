@@ -134,7 +134,8 @@ def make_decreasing_ohlc(open, high, low, close, dates, **kwargs):
 
 def create_ohlc(open, high, low, close, dates=None, direction="both", **kwargs):
     """
-    BETA function that creates an ohlc chart
+    **deprecated**, use instead the plotly.graph_objects trace 
+    :class:`plotly.graph_objects.Ohlc`
 
     :param (list) open: opening values
     :param (list) high: high values
@@ -157,107 +158,14 @@ def create_ohlc(open, high, low, close, dates=None, direction="both", **kwargs):
     :rtype (dict): returns a representation of an ohlc chart figure.
 
     Example 1: Simple OHLC chart from a Pandas DataFrame
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory import create_ohlc
-    from datetime import datetime
 
-    import pandas.io.data as web
+    >>> from plotly.figure_factory import create_ohlc
+    >>> from datetime import datetime
 
-    df = web.DataReader("aapl", 'yahoo', datetime(2008, 8, 15),
-                        datetime(2008, 10, 15))
-    fig = create_ohlc(df.Open, df.High, df.Low, df.Close, dates=df.index)
-
-    py.plot(fig, filename='finance/aapl-ohlc')
-    ```
-
-    Example 2: Add text and annotations to the OHLC chart
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory import create_ohlc
-    from datetime import datetime
-
-    import pandas.io.data as web
-
-    df = web.DataReader("aapl", 'yahoo', datetime(2008, 8, 15),
-                        datetime(2008, 10, 15))
-    fig = create_ohlc(df.Open, df.High, df.Low, df.Close, dates=df.index)
-
-    # Update the fig - options here: https://plot.ly/python/reference/#Layout
-    fig['layout'].update({
-        'title': 'The Great Recession',
-        'yaxis': {'title': 'AAPL Stock'},
-        'shapes': [{
-            'x0': '2008-09-15', 'x1': '2008-09-15', 'type': 'line',
-            'y0': 0, 'y1': 1, 'xref': 'x', 'yref': 'paper',
-            'line': {'color': 'rgb(40,40,40)', 'width': 0.5}
-        }],
-        'annotations': [{
-            'text': "the fall of Lehman Brothers",
-            'x': '2008-09-15', 'y': 1.02,
-            'xref': 'x', 'yref': 'paper',
-            'showarrow': False, 'xanchor': 'left'
-        }]
-    })
-
-    py.plot(fig, filename='finance/aapl-recession-ohlc', validate=False)
-    ```
-
-    Example 3: Customize the OHLC colors
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory import create_ohlc
-    from plotly.graph_objs import Line, Marker
-    from datetime import datetime
-
-    import pandas.io.data as web
-
-    df = web.DataReader("aapl", 'yahoo', datetime(2008, 1, 1),
-                        datetime(2009, 4, 1))
-
-    # Make increasing ohlc sticks and customize their color and name
-    fig_increasing = create_ohlc(df.Open, df.High, df.Low, df.Close,
-                                 dates=df.index, direction='increasing',
-                                 name='AAPL',
-                                 line=Line(color='rgb(150, 200, 250)'))
-
-    # Make decreasing ohlc sticks and customize their color and name
-    fig_decreasing = create_ohlc(df.Open, df.High, df.Low, df.Close,
-                                 dates=df.index, direction='decreasing',
-                                 line=Line(color='rgb(128, 128, 128)'))
-
-    # Initialize the figure
-    fig = fig_increasing
-
-    # Add decreasing data with .extend()
-    fig['data'].extend(fig_decreasing['data'])
-
-    py.iplot(fig, filename='finance/aapl-ohlc-colors', validate=False)
-    ```
-
-    Example 4: OHLC chart with datetime objects
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory import create_ohlc
-
-    from datetime import datetime
-
-    # Add data
-    open_data = [33.0, 33.3, 33.5, 33.0, 34.1]
-    high_data = [33.1, 33.3, 33.6, 33.2, 34.8]
-    low_data = [32.7, 32.7, 32.8, 32.6, 32.8]
-    close_data = [33.0, 32.9, 33.3, 33.1, 33.1]
-    dates = [datetime(year=2013, month=10, day=10),
-             datetime(year=2013, month=11, day=10),
-             datetime(year=2013, month=12, day=10),
-             datetime(year=2014, month=1, day=10),
-             datetime(year=2014, month=2, day=10)]
-
-    # Create ohlc
-    fig = create_ohlc(open_data, high_data, low_data, close_data, dates=dates)
-
-    py.iplot(fig, filename='finance/simple-ohlc', validate=False)
-    ```
+    >>> import pandas as pd
+    >>> df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
+    >>> fig = create_ohlc(df['AAPL.Open'], df['AAPL.High'], df['AAPL.Low'], df['AAPL.Close'], dates=df.index)
+    >>> fig.show()
     """
     if dates is not None:
         utils.validate_equal_length(open, high, low, close, dates)

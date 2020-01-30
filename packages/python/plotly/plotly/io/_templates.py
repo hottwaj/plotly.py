@@ -8,6 +8,8 @@ import os
 import json
 from functools import reduce
 
+from six import string_types
+
 try:
     from math import gcd
 except ImportError:
@@ -35,11 +37,14 @@ class TemplatesConfig(object):
         default_templates = [
             "ggplot2",
             "seaborn",
+            "simple_white",
             "plotly",
             "plotly_white",
             "plotly_dark",
             "presentation",
             "xgridoff",
+            "ygridoff",
+            "gridon",
             "none",
         ]
 
@@ -61,24 +66,34 @@ class TemplatesConfig(object):
         return iter(self._templates)
 
     def __getitem__(self, item):
-        template = self._templates[item]
-        if template is Lazy:
-            from plotly.graph_objs.layout import Template
+        if isinstance(item, string_types):
+            template_names = item.split("+")
+        else:
+            template_names = [item]
 
-            if item == "none":
-                # "none" is a special built-in named template that applied no defaults
-                template = Template()
-                self._templates[item] = template
-            else:
-                # Load template from package data
-                path = os.path.join("package_data", "templates", item + ".json")
-                template_str = pkgutil.get_data("plotly", path).decode("utf-8")
-                template_dict = json.loads(template_str)
-                template = Template(template_dict)
+        templates = []
+        for template_name in template_names:
+            template = self._templates[template_name]
+            if template is Lazy:
+                from plotly.graph_objs.layout import Template
 
-                self._templates[item] = template
+                if template_name == "none":
+                    # "none" is a special built-in named template that applied no defaults
+                    template = Template(data_scatter=[{}])
+                    self._templates[template_name] = template
+                else:
+                    # Load template from package data
+                    path = os.path.join(
+                        "package_data", "templates", template_name + ".json"
+                    )
+                    template_str = pkgutil.get_data("plotly", path).decode("utf-8")
+                    template_dict = json.loads(template_str)
+                    template = Template(template_dict)
 
-        return template
+                    self._templates[template_name] = template
+            templates.append(self._templates[template_name])
+
+        return self.merge_templates(*templates)
 
     def __setitem__(self, key, value):
         self._templates[key] = self._validate(value)
@@ -198,6 +213,7 @@ Templates configuration
 
         Examples
         --------
+
         >>> pio.templates.merge_templates(
         ...     go.layout.Template(layout={'font': {'size': 20}}),
         ...     go.layout.Template(data={'scatter': [{'mode': 'markers'}]}),
@@ -352,74 +368,71 @@ def to_templated(fig, skip=("title", "text")):
     Examples
     --------
     Imports
+
     >>> import plotly.graph_objs as go
     >>> import plotly.io as pio
 
     Construct a figure with large courier text
+
     >>> fig = go.Figure(layout={'title': 'Figure Title',
-    ...                         'font': {'size': 20, 'family': 'Courier'}})
-    >>> fig
+    ...                         'font': {'size': 20, 'family': 'Courier'},
+    ...                         'template':"none"})
+    >>> fig # doctest: +NORMALIZE_WHITESPACE
     Figure({
         'data': [],
-        'layout': {'title': 'Figure Title',
-                   'font': {'family': 'Courier', 'size': 20}}
+        'layout': {'font': {'family': 'Courier', 'size': 20},
+                   'template': '...', 'title': {'text': 'Figure Title'}}
     })
 
     Convert to a figure with a template. Note how the 'font' properties have
     been moved into the template property.
+
     >>> templated_fig = pio.to_templated(fig)
+    >>> templated_fig.layout.template
+    layout.Template({
+        'data': {}, 'layout': {'font': {'family': 'Courier', 'size': 20}}
+    })
     >>> templated_fig
     Figure({
-        'data': [],
-        'layout': {'title': 'Figure Title',
-                   'template': {'layout': {'font': {'family': 'Courier',
-                                                    'size': 20}}}}
+        'data': [], 'layout': {'template': '...', 'title': {'text': 'Figure Title'}}
     })
+
 
     Next create a new figure with this template
 
     >>> fig2 = go.Figure(layout={
     ...     'title': 'Figure 2 Title',
     ...     'template': templated_fig.layout.template})
-    >>> fig2
-    Figure({
-        'data': [],
-        'layout': {'title': 'Figure 2 Title',
-                   'template': {'layout': {'font': {'family': 'Courier',
-                                                    'size': 20}}}}
+    >>> fig2.layout.template
+    layout.Template({
+        'layout': {'font': {'family': 'Courier', 'size': 20}}
     })
 
     The default font in fig2 will now be size 20 Courier.
 
     Next, register as a named template...
+
     >>> pio.templates['large_courier'] = templated_fig.layout.template
 
     and specify this template by name when constructing a figure.
 
     >>> go.Figure(layout={
     ...     'title': 'Figure 3 Title',
-    ...     'template': 'large_courier'})
-    Figure({
-        'data': [],
-        'layout': {'title': 'Figure 3 Title',
-                   'template': {'layout': {'font': {'family': 'Courier',
-                                                    'size': 20}}}}
-    })
+    ...     'template': 'large_courier'}) # doctest: +ELLIPSIS
+    Figure(...)
 
     Finally, set this as the default template to be applied to all new figures
 
     >>> pio.templates.default = 'large_courier'
-    >>> go.Figure(layout={'title': 'Figure 4 Title'})
-    Figure({
-        'data': [],
-        'layout': {'title': 'Figure 4 Title',
-                   'template': {'layout': {'font': {'family': 'Courier',
-                                                    'size': 20}}}}
+    >>> fig = go.Figure(layout={'title': 'Figure 4 Title'})
+    >>> fig.layout.template
+    layout.Template({
+        'layout': {'font': {'family': 'Courier', 'size': 20}}
     })
 
     Returns
     -------
-    figure
+    go.Figure
     """
 
     # process fig

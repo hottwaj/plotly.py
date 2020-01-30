@@ -6,9 +6,9 @@ from plotly import optional_imports
 from plotly.graph_objs import graph_objs as go
 
 np = optional_imports.get_module("numpy")
-sk_measure = optional_imports.get_module("skimage.measure")
 scipy_interp = optional_imports.get_module("scipy.interpolate")
 
+from skimage import measure
 
 # -------------------------- Layout ------------------------------
 
@@ -305,8 +305,8 @@ def _extract_contours(im, values, colors):
     all_contours1, all_values1, all_areas1, all_colors1 = [], [], [], []
     all_contours2, all_values2, all_areas2, all_colors2 = [], [], [], []
     for i, val in enumerate(values):
-        contour_level1 = sk_measure.find_contours(zz_min, val)
-        contour_level2 = sk_measure.find_contours(zz_max, val)
+        contour_level1 = measure.find_contours(zz_min, val)
+        contour_level2 = measure.find_contours(zz_max, val)
         all_contours1.extend(contour_level1)
         all_contours2.extend(contour_level2)
         all_values1.extend([val] * len(contour_level1))
@@ -574,46 +574,50 @@ def create_ternary_contour(
 
     Example 1: ternary contour plot with filled contours
 
-    # Define coordinates
-    a, b = np.mgrid[0:1:20j, 0:1:20j]
-    mask = a + b <= 1
-    a = a[mask].ravel()
-    b = b[mask].ravel()
-    c = 1 - a - b
-    # Values to be displayed as contours
-    z = a * b * c
-    fig = ff.create_ternarycontour(np.stack((a, b, c)), z)
+    >>> import plotly.figure_factory as ff
+    >>> import numpy as np
+    >>> # Define coordinates
+    >>> a, b = np.mgrid[0:1:20j, 0:1:20j]
+    >>> mask = a + b <= 1
+    >>> a = a[mask].ravel()
+    >>> b = b[mask].ravel()
+    >>> c = 1 - a - b
+    >>> # Values to be displayed as contours
+    >>> z = a * b * c
+    >>> fig = ff.create_ternary_contour(np.stack((a, b, c)), z)
+    >>> fig.show()
 
     It is also possible to give only two barycentric coordinates for each
     point, since the sum of the three coordinates is one:
 
-    fig = ff.create_ternarycontour(np.stack((a, b)), z)
-    plotly.iplot(fig)
+    >>> fig = ff.create_ternary_contour(np.stack((a, b)), z)
+
 
     Example 2: ternary contour plot with line contours
 
-    fig = ff.create_ternarycontour(np.stack((a, b, c)), z, coloring='lines')
+    >>> fig = ff.create_ternary_contour(np.stack((a, b, c)), z, coloring='lines')
 
     Example 3: customize number of contours
 
-    fig = ff.create_ternarycontour(np.stack((a, b, c)), z, ncontours=8)
+    >>> fig = ff.create_ternary_contour(np.stack((a, b, c)), z, ncontours=8)
 
     Example 4: superimpose contour plot and original data as markers
 
-    fig = ff.create_ternarycontour(np.stack((a, b, c)), z, coloring='lines',
-                                   showmarkers=True)
+    >>> fig = ff.create_ternary_contour(np.stack((a, b, c)), z, coloring='lines',
+    ...                                 showmarkers=True)
 
     Example 5: customize title and pole labels
 
-    fig = ff.create_ternarycontour(np.stack((a, b, c)), z,
-                                   title='Ternary plot',
-                                   pole_labels=['clay', 'quartz', 'fledspar'])
+    >>> fig = ff.create_ternary_contour(np.stack((a, b, c)), z,
+    ...                                 title='Ternary plot',
+    ...                                 pole_labels=['clay', 'quartz', 'fledspar'])
     """
     if scipy_interp is None:
         raise ImportError(
             """\
     The create_ternary_contour figure factory requires the scipy package"""
         )
+    sk_measure = optional_imports.get_module("skimage")
     if sk_measure is None:
         raise ImportError(
             """\

@@ -144,7 +144,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -216,6 +215,20 @@ class ShowscaleValidator(_plotly_utils.basevalidators.BooleanValidator):
             plotly_name=plotly_name,
             parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class ShowlegendValidator(_plotly_utils.basevalidators.BooleanValidator):
+    def __init__(self, plotly_name="showlegend", parent_name="choropleth", **kwargs):
+        super(ShowlegendValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "style"),
             role=kwargs.pop("role", "info"),
             **kwargs
         )
@@ -379,7 +392,23 @@ class LocationmodeValidator(_plotly_utils.basevalidators.EnumeratedValidator):
             parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "info"),
-            values=kwargs.pop("values", ["ISO-3", "USA-states", "country names"]),
+            values=kwargs.pop(
+                "values", ["ISO-3", "USA-states", "country names", "geojson-id"]
+            ),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class LegendgroupValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="legendgroup", parent_name="choropleth", **kwargs):
+        super(LegendgroupValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "style"),
+            role=kwargs.pop("role", "info"),
             **kwargs
         )
 
@@ -406,7 +435,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs
@@ -560,12 +588,40 @@ class HoverinfoValidator(_plotly_utils.basevalidators.FlaglistValidator):
 import _plotly_utils.basevalidators
 
 
+class GeojsonValidator(_plotly_utils.basevalidators.AnyValidator):
+    def __init__(self, plotly_name="geojson", parent_name="choropleth", **kwargs):
+        super(GeojsonValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
 class GeoValidator(_plotly_utils.basevalidators.SubplotidValidator):
     def __init__(self, plotly_name="geo", parent_name="choropleth", **kwargs):
         super(GeoValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
             dflt=kwargs.pop("dflt", "geo"),
+            edit_type=kwargs.pop("edit_type", "calc"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class FeatureidkeyValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="featureidkey", parent_name="choropleth", **kwargs):
+        super(FeatureidkeyValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -741,12 +797,13 @@ class ColorBarValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display

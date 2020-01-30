@@ -4,6 +4,8 @@
 
 *.gz
 
+*~
+
 # Don't ignore dataset files
 !*.csv.gz
 
@@ -40,3 +42,7 @@ plotly/tests/test_orca/images/*/failed
 plotly/tests/test_orca/images/*/tmp
 /plotly-package/plotly/tests/test_core/test_offline/plotly.min.js
 temp-plot.html
+.vscode
+doc/python/.ipynb_checkpoints
+doc/python/.mapbox_token
+doc/.ipynb_checkpoints

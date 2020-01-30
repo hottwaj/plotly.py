@@ -246,90 +246,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
 import _plotly_utils.basevalidators
 
 
-class HoverlabelValidator(_plotly_utils.basevalidators.CompoundValidator):
-    def __init__(self, plotly_name="hoverlabel", parent_name="carpet", **kwargs):
-        super(HoverlabelValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            data_class_str=kwargs.pop("data_class_str", "Hoverlabel"),
-            data_docs=kwargs.pop(
-                "data_docs",
-                """
-            align
-                Sets the horizontal alignment of the text
-                content within hover label box. Has an effect
-                only if the hover label text spans more two or
-                more lines
-            alignsrc
-                Sets the source reference on plot.ly for  align
-                .
-            bgcolor
-                Sets the background color of the hover labels
-                for this trace
-            bgcolorsrc
-                Sets the source reference on plot.ly for
-                bgcolor .
-            bordercolor
-                Sets the border color of the hover labels for
-                this trace.
-            bordercolorsrc
-                Sets the source reference on plot.ly for
-                bordercolor .
-            font
-                Sets the font used in hover labels.
-            namelength
-                Sets the default length (in number of
-                characters) of the trace name in the hover
-                labels for all traces. -1 shows the whole name
-                regardless of length. 0-3 shows the first 0-3
-                characters, and an integer >3 will show the
-                whole name if it is less than that many
-                characters, but if it is longer, will truncate
-                to `namelength - 3` characters and add an
-                ellipsis.
-            namelengthsrc
-                Sets the source reference on plot.ly for
-                namelength .
-""",
-            ),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
-class HoverinfosrcValidator(_plotly_utils.basevalidators.SrcValidator):
-    def __init__(self, plotly_name="hoverinfosrc", parent_name="carpet", **kwargs):
-        super(HoverinfosrcValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            edit_type=kwargs.pop("edit_type", "none"),
-            role=kwargs.pop("role", "info"),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
-class HoverinfoValidator(_plotly_utils.basevalidators.FlaglistValidator):
-    def __init__(self, plotly_name="hoverinfo", parent_name="carpet", **kwargs):
-        super(HoverinfoValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            array_ok=kwargs.pop("array_ok", True),
-            edit_type=kwargs.pop("edit_type", "none"),
-            extras=kwargs.pop("extras", ["all", "none", "skip"]),
-            flags=kwargs.pop("flags", ["x", "y", "z", "text", "name"]),
-            role=kwargs.pop("role", "info"),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
 class FontValidator(_plotly_utils.basevalidators.CompoundValidator):
     def __init__(self, plotly_name="font", parent_name="carpet", **kwargs):
         super(FontValidator, self).__init__(
@@ -642,16 +558,14 @@ class BaxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
-                for fractional seconds with n digits. For
-                example, *2016-10-13 09:15:23.456* with
-                tickformat "%H~%M~%S.%2f" would display
-                "09~15~23.46"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:  We add one item to d3's
+                date formatter: "%{n}f" for fractional seconds
+                with n digits. For example, *2016-10-13
+                09:15:23.456* with tickformat "%H~%M~%S.%2f"
+                would display "09~15~23.46"
             tickformatstops
                 A tuple of plotly.graph_objects.carpet.baxis.Ti
                 ckformatstop instances or dicts with compatible
@@ -915,16 +829,14 @@ class AaxisValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
-                for fractional seconds with n digits. For
-                example, *2016-10-13 09:15:23.456* with
-                tickformat "%H~%M~%S.%2f" would display
-                "09~15~23.46"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:  We add one item to d3's
+                date formatter: "%{n}f" for fractional seconds
+                with n digits. For example, *2016-10-13
+                09:15:23.456* with tickformat "%H~%M~%S.%2f"
+                would display "09~15~23.46"
             tickformatstops
                 A tuple of plotly.graph_objects.carpet.aaxis.Ti
                 ckformatstop instances or dicts with compatible

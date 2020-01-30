@@ -257,7 +257,9 @@ class Line(_BaseTraceHierarchyType):
     @property
     def width(self):
         """
-        Sets the line width (in px).
+        Sets the contour line width in (in px) Defaults to 0.5 when
+        `contours.type` is "levels". Defaults to 2 when `contour.type`
+        is "constraint".
     
         The 'width' property is a number and may be specified as:
           - An int or float in the interval [0, inf]
@@ -295,7 +297,9 @@ class Line(_BaseTraceHierarchyType):
             Sets the amount of smoothing for the contour lines,
             where 0 corresponds to no smoothing.
         width
-            Sets the line width (in px).
+            Sets the contour line width in (in px) Defaults to 0.5
+            when `contours.type` is "levels". Defaults to 2 when
+            `contour.type` is "constraint".
         """
 
     def __init__(
@@ -321,7 +325,9 @@ class Line(_BaseTraceHierarchyType):
             Sets the amount of smoothing for the contour lines,
             where 0 corresponds to no smoothing.
         width
-            Sets the line width (in px).
+            Sets the contour line width in (in px) Defaults to 0.5
+            when `contours.type` is "levels". Defaults to 2 when
+            `contour.type` is "constraint".
 
         Returns
         -------
@@ -961,8 +967,9 @@ class Contours(_BaseTraceHierarchyType):
     def labelformat(self):
         """
         Sets the contour label formatting rule using d3 formatting
-        mini-language which is very similar to Python, see: https://git
-        hub.com/d3/d3-format/blob/master/README.md#locale_format.
+        mini-language which is very similar to Python, see:
+        https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format
     
         The 'labelformat' property is a string and must be specified as:
           - A string
@@ -1167,8 +1174,8 @@ class Contours(_BaseTraceHierarchyType):
         labelformat
             Sets the contour label formatting rule using d3
             formatting mini-language which is very similar to
-            Python, see: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format.
+            Python, see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         operation
             Sets the constraint operation. "=" keeps regions equal
             to `value` "<" and "<=" keep regions less than `value`
@@ -1248,8 +1255,8 @@ class Contours(_BaseTraceHierarchyType):
         labelformat
             Sets the contour label formatting rule using d3
             formatting mini-language which is very similar to
-            Python, see: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format.
+            Python, see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         operation
             Sets the constraint operation. "=" keeps regions equal
             to `value` "<" and "<=" keep regions less than `value`
@@ -2035,11 +2042,11 @@ class ColorBar(_BaseTraceHierarchyType):
         """
         Sets the tick label formatting rule using d3 formatting mini-
         languages which are very similar to those in Python. For
-        numbers, see: https://github.com/d3/d3-format/blob/master/READM
-        E.md#locale_format And for dates see:
-        https://github.com/d3/d3-time-
-        format/blob/master/README.md#locale_format We add one item to
-        d3's date formatter: "%{n}f" for fractional seconds with n
+        numbers, see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format And for dates
+        see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format We add one item
+        to d3's date formatter: "%{n}f" for fractional seconds with n
         digits. For example, *2016-10-13 09:15:23.456* with tickformat
         "%H~%M~%S.%2f" would display "09~15~23.46"
     
@@ -2706,11 +2713,12 @@ class ColorBar(_BaseTraceHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -2955,11 +2963,12 @@ class ColorBar(_BaseTraceHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -3221,6 +3230,17 @@ an instance of plotly.graph_objs.contour.ColorBar"""
         # ------------------
         self._skip_invalid = False
 
+
+__all__ = [
+    "ColorBar",
+    "Contours",
+    "Hoverlabel",
+    "Line",
+    "Stream",
+    "colorbar",
+    "contours",
+    "hoverlabel",
+]
 
 from plotly.graph_objs.contour import hoverlabel
 from plotly.graph_objs.contour import contours

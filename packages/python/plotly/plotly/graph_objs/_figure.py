@@ -7,9 +7,11 @@ from plotly.graph_objs import (
     Candlestick,
     Carpet,
     Choropleth,
+    Choroplethmapbox,
     Cone,
     Contour,
     Contourcarpet,
+    Densitymapbox,
     Funnel,
     Funnelarea,
     Heatmap,
@@ -17,6 +19,8 @@ from plotly.graph_objs import (
     Histogram,
     Histogram2d,
     Histogram2dContour,
+    Image,
+    Indicator,
     Isosurface,
     Mesh3d,
     Ohlc,
@@ -39,9 +43,11 @@ from plotly.graph_objs import (
     Sunburst,
     Surface,
     Table,
+    Treemap,
     Violin,
     Volume,
     Waterfall,
+    layout as _layout,
 )
 
 
@@ -64,17 +70,19 @@ class Figure(BaseFigure):
               - A list or tuple of dicts of string/value properties where:
                 - The 'type' property specifies the trace type
                     One of: ['area', 'bar', 'barpolar', 'box',
-                             'candlestick', 'carpet', 'choropleth', 'cone',
-                             'contour', 'contourcarpet', 'funnel',
+                             'candlestick', 'carpet', 'choropleth',
+                             'choroplethmapbox', 'cone', 'contour',
+                             'contourcarpet', 'densitymapbox', 'funnel',
                              'funnelarea', 'heatmap', 'heatmapgl',
                              'histogram', 'histogram2d',
-                             'histogram2dcontour', 'isosurface', 'mesh3d',
-                             'ohlc', 'parcats', 'parcoords', 'pie',
-                             'pointcloud', 'sankey', 'scatter',
-                             'scatter3d', 'scattercarpet', 'scattergeo',
-                             'scattergl', 'scattermapbox', 'scatterpolar',
-                             'scatterpolargl', 'scatterternary', 'splom',
-                             'streamtube', 'sunburst', 'surface', 'table',
+                             'histogram2dcontour', 'image', 'indicator',
+                             'isosurface', 'mesh3d', 'ohlc', 'parcats',
+                             'parcoords', 'pie', 'pointcloud', 'sankey',
+                             'scatter', 'scatter3d', 'scattercarpet',
+                             'scattergeo', 'scattergl', 'scattermapbox',
+                             'scatterpolar', 'scatterpolargl',
+                             'scatterternary', 'splom', 'streamtube',
+                             'sunburst', 'surface', 'table', 'treemap',
                              'violin', 'volume', 'waterfall']
         
                 - All remaining properties are passed to the constructor of
@@ -240,6 +248,17 @@ class Figure(BaseFigure):
                         you can set `false` to disable. Colors provided
                         in the trace, using `marker.colors`, are never
                         extended.
+                    extendtreemapcolors
+                        If `true`, the treemap slice colors (whether
+                        given by `treemapcolorway` or inherited from
+                        `colorway`) will be extended to three times its
+                        original length by first repeating every color
+                        20% lighter then each color 20% darker. This is
+                        intended to reduce the likelihood of reusing
+                        the same color when you have many slices, but
+                        you can set `false` to disable. Colors provided
+                        in the trace, using `marker.colors`, are never
+                        extended.
                     font
                         Sets the global font. Note that fonts used in
                         traces and other layout components inherit from
@@ -332,7 +351,7 @@ class Figure(BaseFigure):
                         in various `text` attributes. Attributes such
                         as the graph, axis and colorbar `title.text`,
                         annotation `text` `trace.name` in legend items,
-                        `rangeselector`, `updatemenues` and `sliders`
+                        `rangeselector`, `updatemenus` and `sliders`
                         `label` text all support `meta`. One can access
                         `meta` fields using template strings:
                         `%{meta[i]}` where `i` is the index of the
@@ -464,6 +483,12 @@ class Figure(BaseFigure):
                     transition
                         Sets transition options used during
                         Plotly.react updates.
+                    treemapcolorway
+                        Sets the default treemap slice colors. Defaults
+                        to the main `colorway` used for trace colors.
+                        If you specify a new list here it can still be
+                        extended with lighter and darker colors, see
+                        `extendtreemapcolors`.
                     uirevision
                         Used to allow user interactions with the plot
                         to persist after `Plotly.react` calls that are
@@ -487,6 +512,9 @@ class Figure(BaseFigure):
                         `yaxis.uirevision=*quantity*` and the y axis
                         range will reset but the x axis range will
                         retain any user-driven zoom.
+                    uniformtext
+                        plotly.graph_objects.layout.Uniformtext
+                        instance or dict with compatible properties
                     updatemenus
                         A tuple of
                         plotly.graph_objects.layout.Updatemenu
@@ -798,6 +826,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         tsrc=None,
         uid=None,
         uirevision=None,
@@ -883,16 +913,22 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
-            available.  Anything contained in tag `<extra>` is
-            displayed in the secondary box, for example
+            available. variables `value` and `label`. Anything
+            contained in tag `<extra>` is displayed in the
+            secondary box, for example
             "<extra>{fullData.name}</extra>". To hide the secondary
             box completely, use an empty tag `<extra></extra>`.
         hovertemplatesrc
@@ -1018,6 +1054,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `value` and
+            `label`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         tsrc
             Sets the source reference on plot.ly for  t .
         uid
@@ -1154,6 +1210,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             tsrc=tsrc,
             uid=uid,
             uirevision=uirevision,
@@ -1267,11 +1325,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -1473,6 +1536,8 @@ class Figure(BaseFigure):
         boxpoints=None,
         customdata=None,
         customdatasrc=None,
+        dx=None,
+        dy=None,
         fillcolor=None,
         hoverinfo=None,
         hoverinfosrc=None,
@@ -1487,16 +1552,31 @@ class Figure(BaseFigure):
         jitter=None,
         legendgroup=None,
         line=None,
+        lowerfence=None,
+        lowerfencesrc=None,
         marker=None,
+        mean=None,
+        meansrc=None,
+        median=None,
+        mediansrc=None,
         meta=None,
         metasrc=None,
         name=None,
         notched=None,
+        notchspan=None,
+        notchspansrc=None,
         notchwidth=None,
         offsetgroup=None,
         opacity=None,
         orientation=None,
         pointpos=None,
+        q1=None,
+        q1src=None,
+        q3=None,
+        q3src=None,
+        quartilemethod=None,
+        sd=None,
+        sdsrc=None,
         selected=None,
         selectedpoints=None,
         showlegend=None,
@@ -1506,6 +1586,8 @@ class Figure(BaseFigure):
         uid=None,
         uirevision=None,
         unselected=None,
+        upperfence=None,
+        upperfencesrc=None,
         visible=None,
         whiskerwidth=None,
         width=None,
@@ -1527,16 +1609,30 @@ class Figure(BaseFigure):
         """
         Add a new Box trace
         
-        In vertical (horizontal) box plots, statistics are computed
-        using `y` (`x`) values. By supplying an `x` (`y`) array, one
-        box per distinct x (y) value is drawn If no `x` (`y`) list is
-        provided, a single box is drawn. That box position is then
-        positioned with with `name` or with `x0` (`y0`) if provided.
         Each box spans from quartile 1 (Q1) to quartile 3 (Q3). The
-        second quartile (Q2) is marked by a line inside the box. By
-        default, the whiskers correspond to the box' edges +/- 1.5
-        times the interquartile range (IQR: Q3-Q1), see "boxpoints" for
-        other options.
+        second quartile (Q2, i.e. the median) is marked by a line
+        inside the box. The fences grow outward from the boxes' edges,
+        by default they span +/- 1.5 times the interquartile range
+        (IQR: Q3-Q1), The sample mean and standard deviation as well as
+        notches and the sample, outlier and suspected outliers points
+        can be optionally added to the box plot. The values and
+        positions corresponding to each boxes can be input using two
+        signatures. The first signature expects users to supply the
+        sample values in the `y` data array for vertical boxes (`x` for
+        horizontal boxes). By supplying an `x` (`y`) array, one box per
+        distinct `x` (`y`) value is drawn If no `x` (`y`) list is
+        provided, a single box is drawn. In this case, the box is
+        positioned with the trace `name` or with `x0` (`y0`) if
+        provided. The second signature expects users to supply the
+        boxes corresponding Q1, median and Q3 statistics in the `q1`,
+        `median` and `q3` data arrays respectively. Other box features
+        relying on statistics namely `lowerfence`, `upperfence`,
+        `notchspan` can be set directly by the users. To have plotly
+        compute them or to show sample points besides the boxes, users
+        can set the `y` data array for vertical boxes (`x` for
+        horizontal boxes) to a 2D array with the outer length
+        corresponding to the number of boxes in the traces and the
+        inner length corresponding the sample size.
 
         Parameters
         ----------
@@ -1549,6 +1645,8 @@ class Figure(BaseFigure):
             If True, the mean of the box(es)' underlying
             distribution is drawn as a dashed line inside the
             box(es). If "sd" the standard deviation is also drawn.
+            Defaults to True when `mean` is set. Defaults to "sd"
+            when `sd` is set Otherwise defaults to False.
         boxpoints
             If "outliers", only the sample points lying outside the
             whiskers are shown If "suspectedoutliers", the outlier
@@ -1556,7 +1654,10 @@ class Figure(BaseFigure):
             or greater than 4*Q3-3*Q1 are highlighted (see
             `outliercolor`) If "all", all sample points are shown
             If False, only the box(es) are shown with no sample
-            points
+            points Defaults to "suspectedoutliers" when
+            `marker.outliercolor` or `marker.line.outliercolor` is
+            set. Defaults to "all" under the q1/median/q3
+            signature. Otherwise defaults to "outliers".
         customdata
             Assigns extra data each datum. This may be useful when
             listening to hover, click and selection events. Note
@@ -1564,6 +1665,12 @@ class Figure(BaseFigure):
             the markers DOM elements
         customdatasrc
             Sets the source reference on plot.ly for  customdata .
+        dx
+            Sets the x coordinate step for multi-box traces set
+            using q1/median/q3.
+        dy
+            Sets the y coordinate step for multi-box traces set
+            using q1/median/q3.
         fillcolor
             Sets the fill color. Defaults to a half-transparent
             variant of the line color, marker color, or marker line
@@ -1587,11 +1694,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -1624,9 +1736,31 @@ class Figure(BaseFigure):
         line
             plotly.graph_objects.box.Line instance or dict with
             compatible properties
+        lowerfence
+            Sets the lower fence values. There should be as many
+            items as the number of boxes desired. This attribute
+            has effect only under the q1/median/q3 signature. If
+            `lowerfence` is not provided but a sample (in `y` or
+            `x`) is set, we compute the lower as the last sample
+            point below 1.5 times the IQR.
+        lowerfencesrc
+            Sets the source reference on plot.ly for  lowerfence .
         marker
             plotly.graph_objects.box.Marker instance or dict with
             compatible properties
+        mean
+            Sets the mean values. There should be as many items as
+            the number of boxes desired. This attribute has effect
+            only under the q1/median/q3 signature. If `mean` is not
+            provided but a sample (in `y` or `x`) is set, we
+            compute the mean for each box using the sample values.
+        meansrc
+            Sets the source reference on plot.ly for  mean .
+        median
+            Sets the median values. There should be as many items
+            as the number of boxes desired.
+        mediansrc
+            Sets the source reference on plot.ly for  median .
         meta
             Assigns extra meta information associated with this
             trace that can be used in various text attributes.
@@ -1649,7 +1783,24 @@ class Figure(BaseFigure):
             `x0` (`y` and `y0` if horizontal) are missing and the
             position axis is categorical
         notched
-            Determines whether or not notches should be drawn.
+            Determines whether or not notches are drawn. Notches
+            displays a confidence interval around the median. We
+            compute the confidence interval as median +/- 1.57 *
+            IQR / sqrt(N), where IQR is the interquartile range and
+            N is the sample size. If two boxes' notches do not
+            overlap there is 95% confidence their medians differ.
+            See https://sites.google.com/site/davidsstatistics/home
+            /notched-box-plots for more info. Defaults to False
+            unless `notchwidth` or `notchspan` is set.
+        notchspan
+            Sets the notch span from the boxes' `median` values.
+            There should be as many items as the number of boxes
+            desired. This attribute has effect only under the
+            q1/median/q3 signature. If `notchspan` is not provided
+            but a sample (in `y` or `x`) is set, we compute it as
+            1.57 * IQR / sqrt(N), where N is the sample size.
+        notchspansrc
+            Sets the source reference on plot.ly for  notchspan .
         notchwidth
             Sets the width of the notches relative to the box'
             width. For example, with 0, the notches are as wide as
@@ -1670,6 +1821,40 @@ class Figure(BaseFigure):
             the center of the box(es). Positive (negative) values
             correspond to positions to the right (left) for
             vertical boxes and above (below) for horizontal boxes
+        q1
+            Sets the Quartile 1 values. There should be as many
+            items as the number of boxes desired.
+        q1src
+            Sets the source reference on plot.ly for  q1 .
+        q3
+            Sets the Quartile 3 values. There should be as many
+            items as the number of boxes desired.
+        q3src
+            Sets the source reference on plot.ly for  q3 .
+        quartilemethod
+            Sets the method used to compute the sample's Q1 and Q3
+            quartiles. The "linear" method uses the 25th percentile
+            for Q1 and 75th percentile for Q3 as computed using
+            method #10 (listed on http://www.amstat.org/publication
+            s/jse/v14n3/langford.html). The "exclusive" method uses
+            the median to divide the ordered dataset into two
+            halves if the sample is odd, it does not include the
+            median in either half - Q1 is then the median of the
+            lower half and Q3 the median of the upper half. The
+            "inclusive" method also uses the median to divide the
+            ordered dataset into two halves but if the sample is
+            odd, it includes the median in both halves - Q1 is then
+            the median of the lower half and Q3 the median of the
+            upper half.
+        sd
+            Sets the standard deviation values. There should be as
+            many items as the number of boxes desired. This
+            attribute has effect only under the q1/median/q3
+            signature. If `sd` is not provided but a sample (in `y`
+            or `x`) is set, we compute the standard deviation for
+            each box using the sample values.
+        sdsrc
+            Sets the source reference on plot.ly for  sd .
         selected
             plotly.graph_objects.box.Selected instance or dict with
             compatible properties
@@ -1720,6 +1905,15 @@ class Figure(BaseFigure):
         unselected
             plotly.graph_objects.box.Unselected instance or dict
             with compatible properties
+        upperfence
+            Sets the upper fence values. There should be as many
+            items as the number of boxes desired. This attribute
+            has effect only under the q1/median/q3 signature. If
+            `upperfence` is not provided but a sample (in `y` or
+            `x`) is set, we compute the lower as the last sample
+            point above 1.5 times the IQR.
+        upperfencesrc
+            Sets the source reference on plot.ly for  upperfence .
         visible
             Determines whether or not this trace is visible. If
             "legendonly", the trace is not drawn, but can appear as
@@ -1738,8 +1932,9 @@ class Figure(BaseFigure):
             Sets the x sample data or coordinates. See overview for
             more info.
         x0
-            Sets the x coordinate of the box. See overview for more
-            info.
+            Sets the x coordinate for single-box traces or the
+            starting coordinate for multi-box traces set using
+            q1/median/q3. See overview for more info.
         xaxis
             Sets a reference between this trace's x coordinates and
             a 2D cartesian x axis. If "x" (the default value), the
@@ -1753,8 +1948,9 @@ class Figure(BaseFigure):
             Sets the y sample data or coordinates. See overview for
             more info.
         y0
-            Sets the y coordinate of the box. See overview for more
-            info.
+            Sets the y coordinate for single-box traces or the
+            starting coordinate for multi-box traces set using
+            q1/median/q3. See overview for more info.
         yaxis
             Sets a reference between this trace's y coordinates and
             a 2D cartesian y axis. If "y" (the default value), the
@@ -1793,6 +1989,8 @@ class Figure(BaseFigure):
             boxpoints=boxpoints,
             customdata=customdata,
             customdatasrc=customdatasrc,
+            dx=dx,
+            dy=dy,
             fillcolor=fillcolor,
             hoverinfo=hoverinfo,
             hoverinfosrc=hoverinfosrc,
@@ -1807,16 +2005,31 @@ class Figure(BaseFigure):
             jitter=jitter,
             legendgroup=legendgroup,
             line=line,
+            lowerfence=lowerfence,
+            lowerfencesrc=lowerfencesrc,
             marker=marker,
+            mean=mean,
+            meansrc=meansrc,
+            median=median,
+            mediansrc=mediansrc,
             meta=meta,
             metasrc=metasrc,
             name=name,
             notched=notched,
+            notchspan=notchspan,
+            notchspansrc=notchspansrc,
             notchwidth=notchwidth,
             offsetgroup=offsetgroup,
             opacity=opacity,
             orientation=orientation,
             pointpos=pointpos,
+            q1=q1,
+            q1src=q1src,
+            q3=q3,
+            q3src=q3src,
+            quartilemethod=quartilemethod,
+            sd=sd,
+            sdsrc=sdsrc,
             selected=selected,
             selectedpoints=selectedpoints,
             showlegend=showlegend,
@@ -1826,6 +2039,8 @@ class Figure(BaseFigure):
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
+            upperfence=upperfence,
+            upperfencesrc=upperfencesrc,
             visible=visible,
             whiskerwidth=whiskerwidth,
             width=width,
@@ -2132,9 +2347,6 @@ class Figure(BaseFigure):
         da=None,
         db=None,
         font=None,
-        hoverinfo=None,
-        hoverinfosrc=None,
-        hoverlabel=None,
         ids=None,
         idssrc=None,
         meta=None,
@@ -2193,8 +2405,8 @@ class Figure(BaseFigure):
             Sets the source reference on plot.ly for  b .
         carpet
             An identifier for this carpet, so that `scattercarpet`
-            and `scattercontour` traces can specify a carpet plot
-            on which they lie
+            and `contourcarpet` traces can specify a carpet plot on
+            which they lie
         cheaterslope
             The shift applied to each successive row of data in
             creating a cheater plot. Only used if `x` is been
@@ -2218,16 +2430,6 @@ class Figure(BaseFigure):
         font
             The default font used for axis & tick labels on this
             carpet
-        hoverinfo
-            Determines which trace information appear on hover. If
-            `none` or `skip` are set, no information is displayed
-            upon hovering. But, if `none` is set, click and hover
-            events are still fired.
-        hoverinfosrc
-            Sets the source reference on plot.ly for  hoverinfo .
-        hoverlabel
-            plotly.graph_objects.carpet.Hoverlabel instance or dict
-            with compatible properties
         ids
             Assigns id labels to each datum. These ids for object
             constancy of data points during animation. Should be an
@@ -2345,9 +2547,6 @@ class Figure(BaseFigure):
             da=da,
             db=db,
             font=font,
-            hoverinfo=hoverinfo,
-            hoverinfosrc=hoverinfosrc,
-            hoverlabel=hoverlabel,
             ids=ids,
             idssrc=idssrc,
             meta=meta,
@@ -2376,7 +2575,9 @@ class Figure(BaseFigure):
         colorscale=None,
         customdata=None,
         customdatasrc=None,
+        featureidkey=None,
         geo=None,
+        geojson=None,
         hoverinfo=None,
         hoverinfosrc=None,
         hoverlabel=None,
@@ -2386,6 +2587,7 @@ class Figure(BaseFigure):
         hovertextsrc=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         locationmode=None,
         locations=None,
         locationssrc=None,
@@ -2396,6 +2598,7 @@ class Figure(BaseFigure):
         reversescale=None,
         selected=None,
         selectedpoints=None,
+        showlegend=None,
         showscale=None,
         stream=None,
         text=None,
@@ -2445,7 +2648,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -2459,12 +2662,24 @@ class Figure(BaseFigure):
             the markers DOM elements
         customdatasrc
             Sets the source reference on plot.ly for  customdata .
+        featureidkey
+            Sets the key in GeoJSON features which is used as id to
+            match the items included in the `locations` array. Only
+            has an effect when `geojson` is set. Support nested
+            property, for example "properties.name".
         geo
             Sets a reference between this trace's geospatial
             coordinates and a geographic map. If "geo" (the default
             value), the geospatial coordinates refer to
             `layout.geo`. If "geo2", the geospatial coordinates
             refer to `layout.geo2`, and so on.
+        geojson
+            Sets optional GeoJSON data associated with this trace.
+            If not given, the features on the base map are used. It
+            can be set as a valid GeoJSON object or as a URL
+            string. Note that we only accept GeoJSONs of type
+            "FeatureCollection" or "Feature" with geometries of
+            type "Polygon" or "MultiPolygon".
         hoverinfo
             Determines which trace information appear on hover. If
             `none` or `skip` are set, no information is displayed
@@ -2481,11 +2696,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -2506,9 +2726,17 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         locationmode
             Determines the set of locations used to match entries
-            in `locations` to regions on the map.
+            in `locations` to regions on the map. Values "ISO-3",
+            "USA-states", *country names* correspond to features on
+            the base map and value "geojson-id" corresponds to
+            features from a custom GeoJSON linked to the `geojson`
+            attribute.
         locations
             Sets the coordinates via location IDs or names. See
             `locationmode` for more info.
@@ -2549,6 +2777,9 @@ class Figure(BaseFigure):
             the `unselected` are turned on for all points, whereas,
             any other non-array values means no selection all where
             the `selected` and `unselected` styles have no effect.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -2631,7 +2862,9 @@ class Figure(BaseFigure):
             colorscale=colorscale,
             customdata=customdata,
             customdatasrc=customdatasrc,
+            featureidkey=featureidkey,
             geo=geo,
+            geojson=geojson,
             hoverinfo=hoverinfo,
             hoverinfosrc=hoverinfosrc,
             hoverlabel=hoverlabel,
@@ -2641,6 +2874,7 @@ class Figure(BaseFigure):
             hovertextsrc=hovertextsrc,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             locationmode=locationmode,
             locations=locations,
             locationssrc=locationssrc,
@@ -2651,8 +2885,343 @@ class Figure(BaseFigure):
             reversescale=reversescale,
             selected=selected,
             selectedpoints=selectedpoints,
+            showlegend=showlegend,
             showscale=showscale,
             stream=stream,
+            text=text,
+            textsrc=textsrc,
+            uid=uid,
+            uirevision=uirevision,
+            unselected=unselected,
+            visible=visible,
+            z=z,
+            zauto=zauto,
+            zmax=zmax,
+            zmid=zmid,
+            zmin=zmin,
+            zsrc=zsrc,
+            **kwargs
+        )
+        return self.add_trace(new_trace, row=row, col=col)
+
+    def add_choroplethmapbox(
+        self,
+        autocolorscale=None,
+        below=None,
+        coloraxis=None,
+        colorbar=None,
+        colorscale=None,
+        customdata=None,
+        customdatasrc=None,
+        featureidkey=None,
+        geojson=None,
+        hoverinfo=None,
+        hoverinfosrc=None,
+        hoverlabel=None,
+        hovertemplate=None,
+        hovertemplatesrc=None,
+        hovertext=None,
+        hovertextsrc=None,
+        ids=None,
+        idssrc=None,
+        legendgroup=None,
+        locations=None,
+        locationssrc=None,
+        marker=None,
+        meta=None,
+        metasrc=None,
+        name=None,
+        reversescale=None,
+        selected=None,
+        selectedpoints=None,
+        showlegend=None,
+        showscale=None,
+        stream=None,
+        subplot=None,
+        text=None,
+        textsrc=None,
+        uid=None,
+        uirevision=None,
+        unselected=None,
+        visible=None,
+        z=None,
+        zauto=None,
+        zmax=None,
+        zmid=None,
+        zmin=None,
+        zsrc=None,
+        row=None,
+        col=None,
+        **kwargs
+    ):
+        """
+        Add a new Choroplethmapbox trace
+        
+        GeoJSON features to be filled are set in `geojson` The data
+        that describes the choropleth value-to-color mapping is set in
+        `locations` and `z`.
+
+        Parameters
+        ----------
+        autocolorscale
+            Determines whether the colorscale is a default palette
+            (`autocolorscale: true`) or the palette determined by
+            `colorscale`. In case `colorscale` is unspecified or
+            `autocolorscale` is true, the default  palette will be
+            chosen according to whether numbers in the `color`
+            array are all positive, all negative or mixed.
+        below
+            Determines if the choropleth polygons will be inserted
+            before the layer with the specified ID. By default,
+            choroplethmapbox traces are placed above the water
+            layers. If set to '', the layer will be inserted above
+            every existing layer.
+        coloraxis
+            Sets a reference to a shared color axis. References to
+            these shared color axes are "coloraxis", "coloraxis2",
+            "coloraxis3", etc. Settings for these shared color axes
+            are set in the layout, under `layout.coloraxis`,
+            `layout.coloraxis2`, etc. Note that multiple color
+            scales can be linked to the same color axis.
+        colorbar
+            plotly.graph_objects.choroplethmapbox.ColorBar instance
+            or dict with compatible properties
+        colorscale
+            Sets the colorscale. The colorscale must be an array
+            containing arrays mapping a normalized value to an rgb,
+            rgba, hex, hsl, hsv, or named color string. At minimum,
+            a mapping for the lowest (0) and highest (1) values are
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
+            'rgb(255,0,0)']]`. To control the bounds of the
+            colorscale in color space, use`zmin` and `zmax`.
+            Alternatively, `colorscale` may be a palette name
+            string of the following list: Greys,YlGnBu,Greens,YlOrR
+            d,Bluered,RdBu,Reds,Blues,Picnic,Rainbow,Portland,Jet,H
+            ot,Blackbody,Earth,Electric,Viridis,Cividis.
+        customdata
+            Assigns extra data each datum. This may be useful when
+            listening to hover, click and selection events. Note
+            that, "scatter" traces also appends customdata items in
+            the markers DOM elements
+        customdatasrc
+            Sets the source reference on plot.ly for  customdata .
+        featureidkey
+            Sets the key in GeoJSON features which is used as id to
+            match the items included in the `locations` array.
+            Support nested property, for example "properties.name".
+        geojson
+            Sets the GeoJSON data associated with this trace. It
+            can be set as a valid GeoJSON object or as a URL
+            string. Note that we only accept GeoJSONs of type
+            "FeatureCollection" or "Feature" with geometries of
+            type "Polygon" or "MultiPolygon".
+        hoverinfo
+            Determines which trace information appear on hover. If
+            `none` or `skip` are set, no information is displayed
+            upon hovering. But, if `none` is set, click and hover
+            events are still fired.
+        hoverinfosrc
+            Sets the source reference on plot.ly for  hoverinfo .
+        hoverlabel
+            plotly.graph_objects.choroplethmapbox.Hoverlabel
+            instance or dict with compatible properties
+        hovertemplate
+            Template string used for rendering the information that
+            appear on hover box. Note that this will override
+            `hoverinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
+            https://plot.ly/javascript/plotlyjs-events/#event-data.
+            Additionally, every attributes that can be specified
+            per-point (the ones that are `arrayOk: true`) are
+            available. variable `properties` Anything contained in
+            tag `<extra>` is displayed in the secondary box, for
+            example "<extra>{fullData.name}</extra>". To hide the
+            secondary box completely, use an empty tag
+            `<extra></extra>`.
+        hovertemplatesrc
+            Sets the source reference on plot.ly for  hovertemplate
+            .
+        hovertext
+            Same as `text`.
+        hovertextsrc
+            Sets the source reference on plot.ly for  hovertext .
+        ids
+            Assigns id labels to each datum. These ids for object
+            constancy of data points during animation. Should be an
+            array of strings, not numbers or any other type.
+        idssrc
+            Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
+        locations
+            Sets which features found in "geojson" to plot using
+            their feature `id` field.
+        locationssrc
+            Sets the source reference on plot.ly for  locations .
+        marker
+            plotly.graph_objects.choroplethmapbox.Marker instance
+            or dict with compatible properties
+        meta
+            Assigns extra meta information associated with this
+            trace that can be used in various text attributes.
+            Attributes such as trace `name`, graph, axis and
+            colorbar `title.text`, annotation `text`
+            `rangeselector`, `updatemenues` and `sliders` `label`
+            text all support `meta`. To access the trace `meta`
+            values in an attribute in the same trace, simply use
+            `%{meta[i]}` where `i` is the index or key of the
+            `meta` item in question. To access trace `meta` in
+            layout attributes, use `%{data[n[.meta[i]}` where `i`
+            is the index or key of the `meta` and `n` is the trace
+            index.
+        metasrc
+            Sets the source reference on plot.ly for  meta .
+        name
+            Sets the trace name. The trace name appear as the
+            legend item and on hover.
+        reversescale
+            Reverses the color mapping if true. If true, `zmin`
+            will correspond to the last color in the array and
+            `zmax` will correspond to the first color.
+        selected
+            plotly.graph_objects.choroplethmapbox.Selected instance
+            or dict with compatible properties
+        selectedpoints
+            Array containing integer indices of selected points.
+            Has an effect only for traces that support selections.
+            Note that an empty array means an empty selection where
+            the `unselected` are turned on for all points, whereas,
+            any other non-array values means no selection all where
+            the `selected` and `unselected` styles have no effect.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
+        showscale
+            Determines whether or not a colorbar is displayed for
+            this trace.
+        stream
+            plotly.graph_objects.choroplethmapbox.Stream instance
+            or dict with compatible properties
+        subplot
+            Sets a reference between this trace's data coordinates
+            and a mapbox subplot. If "mapbox" (the default value),
+            the data refer to `layout.mapbox`. If "mapbox2", the
+            data refer to `layout.mapbox2`, and so on.
+        text
+            Sets the text elements associated with each location.
+        textsrc
+            Sets the source reference on plot.ly for  text .
+        uid
+            Assign an id to this trace, Use this to provide object
+            constancy between traces during animations and
+            transitions.
+        uirevision
+            Controls persistence of some user-driven changes to the
+            trace: `constraintrange` in `parcoords` traces, as well
+            as some `editable: true` modifications such as `name`
+            and `colorbar.title`. Defaults to `layout.uirevision`.
+            Note that other user-driven trace attribute changes are
+            controlled by `layout` attributes: `trace.visible` is
+            controlled by `layout.legend.uirevision`,
+            `selectedpoints` is controlled by
+            `layout.selectionrevision`, and `colorbar.(x|y)`
+            (accessible with `config: {editable: true}`) is
+            controlled by `layout.editrevision`. Trace changes are
+            tracked by `uid`, which only falls back on trace index
+            if no `uid` is provided. So if your app can add/remove
+            traces before the end of the `data` array, such that
+            the same trace has a different index, you can still
+            preserve user-driven changes if you give each trace a
+            `uid` that stays with it as it moves.
+        unselected
+            plotly.graph_objects.choroplethmapbox.Unselected
+            instance or dict with compatible properties
+        visible
+            Determines whether or not this trace is visible. If
+            "legendonly", the trace is not drawn, but can appear as
+            a legend item (provided that the legend itself is
+            visible).
+        z
+            Sets the color values.
+        zauto
+            Determines whether or not the color domain is computed
+            with respect to the input data (here in `z`) or the
+            bounds set in `zmin` and `zmax`  Defaults to `false`
+            when `zmin` and `zmax` are set by the user.
+        zmax
+            Sets the upper bound of the color domain. Value should
+            have the same units as in `z` and if set, `zmin` must
+            be set as well.
+        zmid
+            Sets the mid-point of the color domain by scaling
+            `zmin` and/or `zmax` to be equidistant to this point.
+            Value should have the same units as in `z`. Has no
+            effect when `zauto` is `false`.
+        zmin
+            Sets the lower bound of the color domain. Value should
+            have the same units as in `z` and if set, `zmax` must
+            be set as well.
+        zsrc
+            Sets the source reference on plot.ly for  z .
+        row : int or None (default)
+            Subplot row index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        col : int or None (default)
+            Subplot col index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+
+        Returns
+        -------
+        Figure
+        """
+        new_trace = Choroplethmapbox(
+            autocolorscale=autocolorscale,
+            below=below,
+            coloraxis=coloraxis,
+            colorbar=colorbar,
+            colorscale=colorscale,
+            customdata=customdata,
+            customdatasrc=customdatasrc,
+            featureidkey=featureidkey,
+            geojson=geojson,
+            hoverinfo=hoverinfo,
+            hoverinfosrc=hoverinfosrc,
+            hoverlabel=hoverlabel,
+            hovertemplate=hovertemplate,
+            hovertemplatesrc=hovertemplatesrc,
+            hovertext=hovertext,
+            hovertextsrc=hovertextsrc,
+            ids=ids,
+            idssrc=idssrc,
+            legendgroup=legendgroup,
+            locations=locations,
+            locationssrc=locationssrc,
+            marker=marker,
+            meta=meta,
+            metasrc=metasrc,
+            name=name,
+            reversescale=reversescale,
+            selected=selected,
+            selectedpoints=selectedpoints,
+            showlegend=showlegend,
+            showscale=showscale,
+            stream=stream,
+            subplot=subplot,
             text=text,
             textsrc=textsrc,
             uid=uid,
@@ -2691,6 +3260,7 @@ class Figure(BaseFigure):
         hovertextsrc=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         meta=None,
@@ -2699,6 +3269,7 @@ class Figure(BaseFigure):
         opacity=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         sizemode=None,
         sizeref=None,
@@ -2778,7 +3349,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -2808,11 +3379,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -2834,6 +3410,10 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.cone.Lighting instance or dict
             with compatible properties
@@ -2876,6 +3456,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -2994,6 +3577,7 @@ class Figure(BaseFigure):
             hovertextsrc=hovertextsrc,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             meta=meta,
@@ -3002,6 +3586,7 @@ class Figure(BaseFigure):
             opacity=opacity,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             sizemode=sizemode,
             sizeref=sizeref,
@@ -3044,6 +3629,7 @@ class Figure(BaseFigure):
         hoverinfo=None,
         hoverinfosrc=None,
         hoverlabel=None,
+        hoverongaps=None,
         hovertemplate=None,
         hovertemplatesrc=None,
         hovertext=None,
@@ -3131,7 +3717,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -3140,7 +3726,9 @@ class Figure(BaseFigure):
             ot,Blackbody,Earth,Electric,Viridis,Cividis.
         connectgaps
             Determines whether or not gaps (i.e. {nan} or missing
-            values) in the `z` data are filled in.
+            values) in the `z` data are filled in. It is defaulted
+            to true if `z` is a one dimensional array otherwise it
+            is defaulted to false.
         contours
             plotly.graph_objects.contour.Contours instance or dict
             with compatible properties
@@ -3170,17 +3758,26 @@ class Figure(BaseFigure):
         hoverlabel
             plotly.graph_objects.contour.Hoverlabel instance or
             dict with compatible properties
+        hoverongaps
+            Determines whether or not gaps (i.e. {nan} or missing
+            values) in the `z` data have hover labels associated
+            with them.
         hovertemplate
             Template string used for rendering the information that
             appear on hover box. Note that this will override
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -3332,8 +3929,8 @@ class Figure(BaseFigure):
         zhoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. See: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format
+            Python. See: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         zmax
             Sets the upper bound of the color domain. Value should
             have the same units as in `z` and if set, `zmin` must
@@ -3388,6 +3985,7 @@ class Figure(BaseFigure):
             hoverinfo=hoverinfo,
             hoverinfosrc=hoverinfosrc,
             hoverlabel=hoverlabel,
+            hoverongaps=hoverongaps,
             hovertemplate=hovertemplate,
             hovertemplatesrc=hovertemplatesrc,
             hovertext=hovertext,
@@ -3456,9 +4054,6 @@ class Figure(BaseFigure):
         da=None,
         db=None,
         fillcolor=None,
-        hoverinfo=None,
-        hoverinfosrc=None,
-        hoverlabel=None,
         hovertext=None,
         hovertextsrc=None,
         ids=None,
@@ -3560,7 +4155,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -3586,16 +4181,6 @@ class Figure(BaseFigure):
             Defaults to a half-transparent variant of the line
             color, marker color, or marker line color, whichever is
             available.
-        hoverinfo
-            Determines which trace information appear on hover. If
-            `none` or `skip` are set, no information is displayed
-            upon hovering. But, if `none` is set, click and hover
-            events are still fired.
-        hoverinfosrc
-            Sets the source reference on plot.ly for  hoverinfo .
-        hoverlabel
-            plotly.graph_objects.contourcarpet.Hoverlabel instance
-            or dict with compatible properties
         hovertext
             Same as `text`.
         hovertextsrc
@@ -3761,9 +4346,6 @@ class Figure(BaseFigure):
             da=da,
             db=db,
             fillcolor=fillcolor,
-            hoverinfo=hoverinfo,
-            hoverinfosrc=hoverinfosrc,
-            hoverlabel=hoverlabel,
             hovertext=hovertext,
             hovertextsrc=hovertextsrc,
             ids=ids,
@@ -3796,6 +4378,335 @@ class Figure(BaseFigure):
             **kwargs
         )
         return self.add_trace(new_trace, row=row, col=col, secondary_y=secondary_y)
+
+    def add_densitymapbox(
+        self,
+        autocolorscale=None,
+        below=None,
+        coloraxis=None,
+        colorbar=None,
+        colorscale=None,
+        customdata=None,
+        customdatasrc=None,
+        hoverinfo=None,
+        hoverinfosrc=None,
+        hoverlabel=None,
+        hovertemplate=None,
+        hovertemplatesrc=None,
+        hovertext=None,
+        hovertextsrc=None,
+        ids=None,
+        idssrc=None,
+        lat=None,
+        latsrc=None,
+        legendgroup=None,
+        lon=None,
+        lonsrc=None,
+        meta=None,
+        metasrc=None,
+        name=None,
+        opacity=None,
+        radius=None,
+        radiussrc=None,
+        reversescale=None,
+        showlegend=None,
+        showscale=None,
+        stream=None,
+        subplot=None,
+        text=None,
+        textsrc=None,
+        uid=None,
+        uirevision=None,
+        visible=None,
+        z=None,
+        zauto=None,
+        zmax=None,
+        zmid=None,
+        zmin=None,
+        zsrc=None,
+        row=None,
+        col=None,
+        **kwargs
+    ):
+        """
+        Add a new Densitymapbox trace
+        
+        Draws a bivariate kernel density estimation with a Gaussian
+        kernel from `lon` and `lat` coordinates and optional `z` values
+        using a colorscale.
+
+        Parameters
+        ----------
+        autocolorscale
+            Determines whether the colorscale is a default palette
+            (`autocolorscale: true`) or the palette determined by
+            `colorscale`. In case `colorscale` is unspecified or
+            `autocolorscale` is true, the default  palette will be
+            chosen according to whether numbers in the `color`
+            array are all positive, all negative or mixed.
+        below
+            Determines if the densitymapbox trace will be inserted
+            before the layer with the specified ID. By default,
+            densitymapbox traces are placed below the first layer
+            of type symbol If set to '', the layer will be inserted
+            above every existing layer.
+        coloraxis
+            Sets a reference to a shared color axis. References to
+            these shared color axes are "coloraxis", "coloraxis2",
+            "coloraxis3", etc. Settings for these shared color axes
+            are set in the layout, under `layout.coloraxis`,
+            `layout.coloraxis2`, etc. Note that multiple color
+            scales can be linked to the same color axis.
+        colorbar
+            plotly.graph_objects.densitymapbox.ColorBar instance or
+            dict with compatible properties
+        colorscale
+            Sets the colorscale. The colorscale must be an array
+            containing arrays mapping a normalized value to an rgb,
+            rgba, hex, hsl, hsv, or named color string. At minimum,
+            a mapping for the lowest (0) and highest (1) values are
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
+            'rgb(255,0,0)']]`. To control the bounds of the
+            colorscale in color space, use`zmin` and `zmax`.
+            Alternatively, `colorscale` may be a palette name
+            string of the following list: Greys,YlGnBu,Greens,YlOrR
+            d,Bluered,RdBu,Reds,Blues,Picnic,Rainbow,Portland,Jet,H
+            ot,Blackbody,Earth,Electric,Viridis,Cividis.
+        customdata
+            Assigns extra data each datum. This may be useful when
+            listening to hover, click and selection events. Note
+            that, "scatter" traces also appends customdata items in
+            the markers DOM elements
+        customdatasrc
+            Sets the source reference on plot.ly for  customdata .
+        hoverinfo
+            Determines which trace information appear on hover. If
+            `none` or `skip` are set, no information is displayed
+            upon hovering. But, if `none` is set, click and hover
+            events are still fired.
+        hoverinfosrc
+            Sets the source reference on plot.ly for  hoverinfo .
+        hoverlabel
+            plotly.graph_objects.densitymapbox.Hoverlabel instance
+            or dict with compatible properties
+        hovertemplate
+            Template string used for rendering the information that
+            appear on hover box. Note that this will override
+            `hoverinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
+            https://plot.ly/javascript/plotlyjs-events/#event-data.
+            Additionally, every attributes that can be specified
+            per-point (the ones that are `arrayOk: true`) are
+            available.  Anything contained in tag `<extra>` is
+            displayed in the secondary box, for example
+            "<extra>{fullData.name}</extra>". To hide the secondary
+            box completely, use an empty tag `<extra></extra>`.
+        hovertemplatesrc
+            Sets the source reference on plot.ly for  hovertemplate
+            .
+        hovertext
+            Sets hover text elements associated with each (lon,lat)
+            pair If a single string, the same string appears over
+            all the data points. If an array of string, the items
+            are mapped in order to the this trace's (lon,lat)
+            coordinates. To be seen, trace `hoverinfo` must contain
+            a "text" flag.
+        hovertextsrc
+            Sets the source reference on plot.ly for  hovertext .
+        ids
+            Assigns id labels to each datum. These ids for object
+            constancy of data points during animation. Should be an
+            array of strings, not numbers or any other type.
+        idssrc
+            Sets the source reference on plot.ly for  ids .
+        lat
+            Sets the latitude coordinates (in degrees North).
+        latsrc
+            Sets the source reference on plot.ly for  lat .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
+        lon
+            Sets the longitude coordinates (in degrees East).
+        lonsrc
+            Sets the source reference on plot.ly for  lon .
+        meta
+            Assigns extra meta information associated with this
+            trace that can be used in various text attributes.
+            Attributes such as trace `name`, graph, axis and
+            colorbar `title.text`, annotation `text`
+            `rangeselector`, `updatemenues` and `sliders` `label`
+            text all support `meta`. To access the trace `meta`
+            values in an attribute in the same trace, simply use
+            `%{meta[i]}` where `i` is the index or key of the
+            `meta` item in question. To access trace `meta` in
+            layout attributes, use `%{data[n[.meta[i]}` where `i`
+            is the index or key of the `meta` and `n` is the trace
+            index.
+        metasrc
+            Sets the source reference on plot.ly for  meta .
+        name
+            Sets the trace name. The trace name appear as the
+            legend item and on hover.
+        opacity
+            Sets the opacity of the trace.
+        radius
+            Sets the radius of influence of one `lon` / `lat` point
+            in pixels. Increasing the value makes the densitymapbox
+            trace smoother, but less detailed.
+        radiussrc
+            Sets the source reference on plot.ly for  radius .
+        reversescale
+            Reverses the color mapping if true. If true, `zmin`
+            will correspond to the last color in the array and
+            `zmax` will correspond to the first color.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
+        showscale
+            Determines whether or not a colorbar is displayed for
+            this trace.
+        stream
+            plotly.graph_objects.densitymapbox.Stream instance or
+            dict with compatible properties
+        subplot
+            Sets a reference between this trace's data coordinates
+            and a mapbox subplot. If "mapbox" (the default value),
+            the data refer to `layout.mapbox`. If "mapbox2", the
+            data refer to `layout.mapbox2`, and so on.
+        text
+            Sets text elements associated with each (lon,lat) pair
+            If a single string, the same string appears over all
+            the data points. If an array of string, the items are
+            mapped in order to the this trace's (lon,lat)
+            coordinates. If trace `hoverinfo` contains a "text"
+            flag and "hovertext" is not set, these elements will be
+            seen in the hover labels.
+        textsrc
+            Sets the source reference on plot.ly for  text .
+        uid
+            Assign an id to this trace, Use this to provide object
+            constancy between traces during animations and
+            transitions.
+        uirevision
+            Controls persistence of some user-driven changes to the
+            trace: `constraintrange` in `parcoords` traces, as well
+            as some `editable: true` modifications such as `name`
+            and `colorbar.title`. Defaults to `layout.uirevision`.
+            Note that other user-driven trace attribute changes are
+            controlled by `layout` attributes: `trace.visible` is
+            controlled by `layout.legend.uirevision`,
+            `selectedpoints` is controlled by
+            `layout.selectionrevision`, and `colorbar.(x|y)`
+            (accessible with `config: {editable: true}`) is
+            controlled by `layout.editrevision`. Trace changes are
+            tracked by `uid`, which only falls back on trace index
+            if no `uid` is provided. So if your app can add/remove
+            traces before the end of the `data` array, such that
+            the same trace has a different index, you can still
+            preserve user-driven changes if you give each trace a
+            `uid` that stays with it as it moves.
+        visible
+            Determines whether or not this trace is visible. If
+            "legendonly", the trace is not drawn, but can appear as
+            a legend item (provided that the legend itself is
+            visible).
+        z
+            Sets the points' weight. For example, a value of 10
+            would be equivalent to having 10 points of weight 1 in
+            the same spot
+        zauto
+            Determines whether or not the color domain is computed
+            with respect to the input data (here in `z`) or the
+            bounds set in `zmin` and `zmax`  Defaults to `false`
+            when `zmin` and `zmax` are set by the user.
+        zmax
+            Sets the upper bound of the color domain. Value should
+            have the same units as in `z` and if set, `zmin` must
+            be set as well.
+        zmid
+            Sets the mid-point of the color domain by scaling
+            `zmin` and/or `zmax` to be equidistant to this point.
+            Value should have the same units as in `z`. Has no
+            effect when `zauto` is `false`.
+        zmin
+            Sets the lower bound of the color domain. Value should
+            have the same units as in `z` and if set, `zmax` must
+            be set as well.
+        zsrc
+            Sets the source reference on plot.ly for  z .
+        row : int or None (default)
+            Subplot row index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        col : int or None (default)
+            Subplot col index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+
+        Returns
+        -------
+        Figure
+        """
+        new_trace = Densitymapbox(
+            autocolorscale=autocolorscale,
+            below=below,
+            coloraxis=coloraxis,
+            colorbar=colorbar,
+            colorscale=colorscale,
+            customdata=customdata,
+            customdatasrc=customdatasrc,
+            hoverinfo=hoverinfo,
+            hoverinfosrc=hoverinfosrc,
+            hoverlabel=hoverlabel,
+            hovertemplate=hovertemplate,
+            hovertemplatesrc=hovertemplatesrc,
+            hovertext=hovertext,
+            hovertextsrc=hovertextsrc,
+            ids=ids,
+            idssrc=idssrc,
+            lat=lat,
+            latsrc=latsrc,
+            legendgroup=legendgroup,
+            lon=lon,
+            lonsrc=lonsrc,
+            meta=meta,
+            metasrc=metasrc,
+            name=name,
+            opacity=opacity,
+            radius=radius,
+            radiussrc=radiussrc,
+            reversescale=reversescale,
+            showlegend=showlegend,
+            showscale=showscale,
+            stream=stream,
+            subplot=subplot,
+            text=text,
+            textsrc=textsrc,
+            uid=uid,
+            uirevision=uirevision,
+            visible=visible,
+            z=z,
+            zauto=zauto,
+            zmax=zmax,
+            zmid=zmid,
+            zmin=zmin,
+            zsrc=zsrc,
+            **kwargs
+        )
+        return self.add_trace(new_trace, row=row, col=col)
 
     def add_funnel(
         self,
@@ -3838,6 +4749,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         visible=None,
@@ -3910,11 +4823,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -4040,6 +4958,27 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables
+            `percentInitial`, `percentPrevious`, `percentTotal`,
+            `label` and `value`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -4158,6 +5097,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             visible=visible,
@@ -4210,6 +5151,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         title=None,
         uid=None,
         uirevision=None,
@@ -4264,20 +5207,24 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
-            available. variables `label`, `color`, `value`,
-            `percent` and `text`. Anything contained in tag
-            `<extra>` is displayed in the secondary box, for
-            example "<extra>{fullData.name}</extra>". To hide the
-            secondary box completely, use an empty tag
-            `<extra></extra>`.
+            available. variables `label`, `color`, `value`, `text`
+            and `percent`. Anything contained in tag `<extra>` is
+            displayed in the secondary box, for example
+            "<extra>{fullData.name}</extra>". To hide the secondary
+            box completely, use an empty tag `<extra></extra>`.
         hovertemplatesrc
             Sets the source reference on plot.ly for  hovertemplate
             .
@@ -4365,6 +5312,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `label`,
+            `color`, `value`, `text` and `percent`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         title
             plotly.graph_objects.funnelarea.Title instance or dict
             with compatible properties
@@ -4448,6 +5415,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             title=title,
             uid=uid,
             uirevision=uirevision,
@@ -4472,17 +5441,20 @@ class Figure(BaseFigure):
         hoverinfo=None,
         hoverinfosrc=None,
         hoverlabel=None,
+        hoverongaps=None,
         hovertemplate=None,
         hovertemplatesrc=None,
         hovertext=None,
         hovertextsrc=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         meta=None,
         metasrc=None,
         name=None,
         opacity=None,
         reversescale=None,
+        showlegend=None,
         showscale=None,
         stream=None,
         text=None,
@@ -4563,7 +5535,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -4572,7 +5544,9 @@ class Figure(BaseFigure):
             ot,Blackbody,Earth,Electric,Viridis,Cividis.
         connectgaps
             Determines whether or not gaps (i.e. {nan} or missing
-            values) in the `z` data are filled in.
+            values) in the `z` data are filled in. It is defaulted
+            to true if `z` is a one dimensional array and `zsmooth`
+            is not false; otherwise it is defaulted to false.
         customdata
             Assigns extra data each datum. This may be useful when
             listening to hover, click and selection events. Note
@@ -4594,17 +5568,26 @@ class Figure(BaseFigure):
         hoverlabel
             plotly.graph_objects.heatmap.Hoverlabel instance or
             dict with compatible properties
+        hoverongaps
+            Determines whether or not gaps (i.e. {nan} or missing
+            values) in the `z` data have hover labels associated
+            with them.
         hovertemplate
             Template string used for rendering the information that
             appear on hover box. Note that this will override
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -4625,6 +5608,10 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         meta
             Assigns extra meta information associated with this
             trace that can be used in various text attributes.
@@ -4649,6 +5636,9 @@ class Figure(BaseFigure):
             Reverses the color mapping if true. If true, `zmin`
             will correspond to the last color in the array and
             `zmax` will correspond to the first color.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -4744,8 +5734,8 @@ class Figure(BaseFigure):
         zhoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. See: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format
+            Python. See: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         zmax
             Sets the upper bound of the color domain. Value should
             have the same units as in `z` and if set, `zmin` must
@@ -4799,17 +5789,20 @@ class Figure(BaseFigure):
             hoverinfo=hoverinfo,
             hoverinfosrc=hoverinfosrc,
             hoverlabel=hoverlabel,
+            hoverongaps=hoverongaps,
             hovertemplate=hovertemplate,
             hovertemplatesrc=hovertemplatesrc,
             hovertext=hovertext,
             hovertextsrc=hovertextsrc,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             meta=meta,
             metasrc=metasrc,
             name=name,
             opacity=opacity,
             reversescale=reversescale,
+            showlegend=showlegend,
             showscale=showscale,
             stream=stream,
             text=text,
@@ -4922,7 +5915,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -5300,11 +6293,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -5552,6 +6550,7 @@ class Figure(BaseFigure):
         hovertemplatesrc=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         marker=None,
         meta=None,
         metasrc=None,
@@ -5560,6 +6559,7 @@ class Figure(BaseFigure):
         nbinsy=None,
         opacity=None,
         reversescale=None,
+        showlegend=None,
         showscale=None,
         stream=None,
         uid=None,
@@ -5643,7 +6643,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -5698,11 +6698,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -5720,6 +6725,10 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         marker
             plotly.graph_objects.histogram2d.Marker instance or
             dict with compatible properties
@@ -5759,6 +6768,9 @@ class Figure(BaseFigure):
             Reverses the color mapping if true. If true, `zmin`
             will correspond to the last color in the array and
             `zmax` will correspond to the first color.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -5848,8 +6860,8 @@ class Figure(BaseFigure):
         zhoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. See: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format
+            Python. See: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         zmax
             Sets the upper bound of the color domain. Value should
             have the same units as in `z` and if set, `zmin` must
@@ -5909,6 +6921,7 @@ class Figure(BaseFigure):
             hovertemplatesrc=hovertemplatesrc,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             marker=marker,
             meta=meta,
             metasrc=metasrc,
@@ -5917,6 +6930,7 @@ class Figure(BaseFigure):
             nbinsy=nbinsy,
             opacity=opacity,
             reversescale=reversescale,
+            showlegend=showlegend,
             showscale=showscale,
             stream=stream,
             uid=uid,
@@ -6067,7 +7081,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`zmin` and `zmax`.
             Alternatively, `colorscale` may be a palette name
@@ -6125,11 +7139,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -6287,8 +7306,8 @@ class Figure(BaseFigure):
         zhoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. See: https://github.com/d3/d3-format/blob/maste
-            r/README.md#locale_format
+            Python. See: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         zmax
             Sets the upper bound of the color domain. Value should
             have the same units as in `z` and if set, `zmin` must
@@ -6388,6 +7407,428 @@ class Figure(BaseFigure):
         )
         return self.add_trace(new_trace, row=row, col=col, secondary_y=secondary_y)
 
+    def add_image(
+        self,
+        colormodel=None,
+        customdata=None,
+        customdatasrc=None,
+        dx=None,
+        dy=None,
+        hoverinfo=None,
+        hoverinfosrc=None,
+        hoverlabel=None,
+        hovertemplate=None,
+        hovertemplatesrc=None,
+        hovertext=None,
+        hovertextsrc=None,
+        ids=None,
+        idssrc=None,
+        meta=None,
+        metasrc=None,
+        name=None,
+        opacity=None,
+        stream=None,
+        text=None,
+        textsrc=None,
+        uid=None,
+        uirevision=None,
+        visible=None,
+        x0=None,
+        xaxis=None,
+        y0=None,
+        yaxis=None,
+        z=None,
+        zmax=None,
+        zmin=None,
+        zsrc=None,
+        row=None,
+        col=None,
+        secondary_y=None,
+        **kwargs
+    ):
+        """
+        Add a new Image trace
+        
+        Display an image, i.e. data on a 2D regular raster. By default,
+        when an image is displayed in a subplot, its y axis will be
+        reversed (ie. `autorange: 'reversed'`), constrained to the
+        domain (ie. `constrain: 'domain'`) and it will have the same
+        scale as its x axis (ie. `scaleanchor: 'x,`) in order for
+        pixels to be rendered as squares.
+
+        Parameters
+        ----------
+        colormodel
+            Color model used to map the numerical color components
+            described in `z` into colors.
+        customdata
+            Assigns extra data each datum. This may be useful when
+            listening to hover, click and selection events. Note
+            that, "scatter" traces also appends customdata items in
+            the markers DOM elements
+        customdatasrc
+            Sets the source reference on plot.ly for  customdata .
+        dx
+            Set the pixel's horizontal size.
+        dy
+            Set the pixel's vertical size
+        hoverinfo
+            Determines which trace information appear on hover. If
+            `none` or `skip` are set, no information is displayed
+            upon hovering. But, if `none` is set, click and hover
+            events are still fired.
+        hoverinfosrc
+            Sets the source reference on plot.ly for  hoverinfo .
+        hoverlabel
+            plotly.graph_objects.image.Hoverlabel instance or dict
+            with compatible properties
+        hovertemplate
+            Template string used for rendering the information that
+            appear on hover box. Note that this will override
+            `hoverinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
+            https://plot.ly/javascript/plotlyjs-events/#event-data.
+            Additionally, every attributes that can be specified
+            per-point (the ones that are `arrayOk: true`) are
+            available. variables `z`, `color` and `colormodel`.
+            Anything contained in tag `<extra>` is displayed in the
+            secondary box, for example
+            "<extra>{fullData.name}</extra>". To hide the secondary
+            box completely, use an empty tag `<extra></extra>`.
+        hovertemplatesrc
+            Sets the source reference on plot.ly for  hovertemplate
+            .
+        hovertext
+            Same as `text`.
+        hovertextsrc
+            Sets the source reference on plot.ly for  hovertext .
+        ids
+            Assigns id labels to each datum. These ids for object
+            constancy of data points during animation. Should be an
+            array of strings, not numbers or any other type.
+        idssrc
+            Sets the source reference on plot.ly for  ids .
+        meta
+            Assigns extra meta information associated with this
+            trace that can be used in various text attributes.
+            Attributes such as trace `name`, graph, axis and
+            colorbar `title.text`, annotation `text`
+            `rangeselector`, `updatemenues` and `sliders` `label`
+            text all support `meta`. To access the trace `meta`
+            values in an attribute in the same trace, simply use
+            `%{meta[i]}` where `i` is the index or key of the
+            `meta` item in question. To access trace `meta` in
+            layout attributes, use `%{data[n[.meta[i]}` where `i`
+            is the index or key of the `meta` and `n` is the trace
+            index.
+        metasrc
+            Sets the source reference on plot.ly for  meta .
+        name
+            Sets the trace name. The trace name appear as the
+            legend item and on hover.
+        opacity
+            Sets the opacity of the trace.
+        stream
+            plotly.graph_objects.image.Stream instance or dict with
+            compatible properties
+        text
+            Sets the text elements associated with each z value.
+        textsrc
+            Sets the source reference on plot.ly for  text .
+        uid
+            Assign an id to this trace, Use this to provide object
+            constancy between traces during animations and
+            transitions.
+        uirevision
+            Controls persistence of some user-driven changes to the
+            trace: `constraintrange` in `parcoords` traces, as well
+            as some `editable: true` modifications such as `name`
+            and `colorbar.title`. Defaults to `layout.uirevision`.
+            Note that other user-driven trace attribute changes are
+            controlled by `layout` attributes: `trace.visible` is
+            controlled by `layout.legend.uirevision`,
+            `selectedpoints` is controlled by
+            `layout.selectionrevision`, and `colorbar.(x|y)`
+            (accessible with `config: {editable: true}`) is
+            controlled by `layout.editrevision`. Trace changes are
+            tracked by `uid`, which only falls back on trace index
+            if no `uid` is provided. So if your app can add/remove
+            traces before the end of the `data` array, such that
+            the same trace has a different index, you can still
+            preserve user-driven changes if you give each trace a
+            `uid` that stays with it as it moves.
+        visible
+            Determines whether or not this trace is visible. If
+            "legendonly", the trace is not drawn, but can appear as
+            a legend item (provided that the legend itself is
+            visible).
+        x0
+            Set the image's x position.
+        xaxis
+            Sets a reference between this trace's x coordinates and
+            a 2D cartesian x axis. If "x" (the default value), the
+            x coordinates refer to `layout.xaxis`. If "x2", the x
+            coordinates refer to `layout.xaxis2`, and so on.
+        y0
+            Set the image's y position.
+        yaxis
+            Sets a reference between this trace's y coordinates and
+            a 2D cartesian y axis. If "y" (the default value), the
+            y coordinates refer to `layout.yaxis`. If "y2", the y
+            coordinates refer to `layout.yaxis2`, and so on.
+        z
+            A 2-dimensional array in which each element is an array
+            of 3 or 4 numbers representing a color.
+        zmax
+            Array defining the higher bound for each color
+            component. Note that the default value will depend on
+            the colormodel. For the `rgb` colormodel, it is [255,
+            255, 255]. For the `rgba` colormodel, it is [255, 255,
+            255, 1]. For the `hsl` colormodel, it is [360, 100,
+            100]. For the `hsla` colormodel, it is [360, 100, 100,
+            1].
+        zmin
+            Array defining the lower bound for each color
+            component. Note that the default value will depend on
+            the colormodel. For the `rgb` colormodel, it is [0, 0,
+            0]. For the `rgba` colormodel, it is [0, 0, 0, 0]. For
+            the `hsl` colormodel, it is [0, 0, 0]. For the `hsla`
+            colormodel, it is [0, 0, 0, 0].
+        zsrc
+            Sets the source reference on plot.ly for  z .
+        row : int or None (default)
+            Subplot row index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        col : int or None (default)
+            Subplot col index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        secondary_y: boolean or None (default None)
+            If True, associate this trace with the secondary y-axis of the
+            subplot at the specified row and col. Only valid if all of the
+            following conditions are satisfied:
+              * The figure was created using `plotly.subplots.make_subplots`.
+              * The row and col arguments are not None
+              * The subplot at the specified row and col has type xy
+                (which is the default) and secondary_y True.  These
+                properties are specified in the specs argument to
+                make_subplots. See the make_subplots docstring for more info.
+
+        Returns
+        -------
+        Figure
+        """
+        new_trace = Image(
+            colormodel=colormodel,
+            customdata=customdata,
+            customdatasrc=customdatasrc,
+            dx=dx,
+            dy=dy,
+            hoverinfo=hoverinfo,
+            hoverinfosrc=hoverinfosrc,
+            hoverlabel=hoverlabel,
+            hovertemplate=hovertemplate,
+            hovertemplatesrc=hovertemplatesrc,
+            hovertext=hovertext,
+            hovertextsrc=hovertextsrc,
+            ids=ids,
+            idssrc=idssrc,
+            meta=meta,
+            metasrc=metasrc,
+            name=name,
+            opacity=opacity,
+            stream=stream,
+            text=text,
+            textsrc=textsrc,
+            uid=uid,
+            uirevision=uirevision,
+            visible=visible,
+            x0=x0,
+            xaxis=xaxis,
+            y0=y0,
+            yaxis=yaxis,
+            z=z,
+            zmax=zmax,
+            zmin=zmin,
+            zsrc=zsrc,
+            **kwargs
+        )
+        return self.add_trace(new_trace, row=row, col=col, secondary_y=secondary_y)
+
+    def add_indicator(
+        self,
+        align=None,
+        customdata=None,
+        customdatasrc=None,
+        delta=None,
+        domain=None,
+        gauge=None,
+        ids=None,
+        idssrc=None,
+        meta=None,
+        metasrc=None,
+        mode=None,
+        name=None,
+        number=None,
+        stream=None,
+        title=None,
+        uid=None,
+        uirevision=None,
+        value=None,
+        visible=None,
+        row=None,
+        col=None,
+        **kwargs
+    ):
+        """
+        Add a new Indicator trace
+        
+        An indicator is used to visualize a single `value` along with
+        some contextual information such as `steps` or a `threshold`,
+        using a combination of three visual elements: a number, a
+        delta, and/or a gauge. Deltas are taken with respect to a
+        `reference`. Gauges can be either angular or bullet (aka
+        linear) gauges.
+
+        Parameters
+        ----------
+        align
+            Sets the horizontal alignment of the `text` within the
+            box. Note that this attribute has no effect if an
+            angular gauge is displayed: in this case, it is always
+            centered
+        customdata
+            Assigns extra data each datum. This may be useful when
+            listening to hover, click and selection events. Note
+            that, "scatter" traces also appends customdata items in
+            the markers DOM elements
+        customdatasrc
+            Sets the source reference on plot.ly for  customdata .
+        delta
+            plotly.graph_objects.indicator.Delta instance or dict
+            with compatible properties
+        domain
+            plotly.graph_objects.indicator.Domain instance or dict
+            with compatible properties
+        gauge
+            The gauge of the Indicator plot.
+        ids
+            Assigns id labels to each datum. These ids for object
+            constancy of data points during animation. Should be an
+            array of strings, not numbers or any other type.
+        idssrc
+            Sets the source reference on plot.ly for  ids .
+        meta
+            Assigns extra meta information associated with this
+            trace that can be used in various text attributes.
+            Attributes such as trace `name`, graph, axis and
+            colorbar `title.text`, annotation `text`
+            `rangeselector`, `updatemenues` and `sliders` `label`
+            text all support `meta`. To access the trace `meta`
+            values in an attribute in the same trace, simply use
+            `%{meta[i]}` where `i` is the index or key of the
+            `meta` item in question. To access trace `meta` in
+            layout attributes, use `%{data[n[.meta[i]}` where `i`
+            is the index or key of the `meta` and `n` is the trace
+            index.
+        metasrc
+            Sets the source reference on plot.ly for  meta .
+        mode
+            Determines how the value is displayed on the graph.
+            `number` displays the value numerically in text.
+            `delta` displays the difference to a reference value in
+            text. Finally, `gauge` displays the value graphically
+            on an axis.
+        name
+            Sets the trace name. The trace name appear as the
+            legend item and on hover.
+        number
+            plotly.graph_objects.indicator.Number instance or dict
+            with compatible properties
+        stream
+            plotly.graph_objects.indicator.Stream instance or dict
+            with compatible properties
+        title
+            plotly.graph_objects.indicator.Title instance or dict
+            with compatible properties
+        uid
+            Assign an id to this trace, Use this to provide object
+            constancy between traces during animations and
+            transitions.
+        uirevision
+            Controls persistence of some user-driven changes to the
+            trace: `constraintrange` in `parcoords` traces, as well
+            as some `editable: true` modifications such as `name`
+            and `colorbar.title`. Defaults to `layout.uirevision`.
+            Note that other user-driven trace attribute changes are
+            controlled by `layout` attributes: `trace.visible` is
+            controlled by `layout.legend.uirevision`,
+            `selectedpoints` is controlled by
+            `layout.selectionrevision`, and `colorbar.(x|y)`
+            (accessible with `config: {editable: true}`) is
+            controlled by `layout.editrevision`. Trace changes are
+            tracked by `uid`, which only falls back on trace index
+            if no `uid` is provided. So if your app can add/remove
+            traces before the end of the `data` array, such that
+            the same trace has a different index, you can still
+            preserve user-driven changes if you give each trace a
+            `uid` that stays with it as it moves.
+        value
+            Sets the number to be displayed.
+        visible
+            Determines whether or not this trace is visible. If
+            "legendonly", the trace is not drawn, but can appear as
+            a legend item (provided that the legend itself is
+            visible).
+        row : int or None (default)
+            Subplot row index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        col : int or None (default)
+            Subplot col index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+
+        Returns
+        -------
+        Figure
+        """
+        new_trace = Indicator(
+            align=align,
+            customdata=customdata,
+            customdatasrc=customdatasrc,
+            delta=delta,
+            domain=domain,
+            gauge=gauge,
+            ids=ids,
+            idssrc=idssrc,
+            meta=meta,
+            metasrc=metasrc,
+            mode=mode,
+            name=name,
+            number=number,
+            stream=stream,
+            title=title,
+            uid=uid,
+            uirevision=uirevision,
+            value=value,
+            visible=visible,
+            **kwargs
+        )
+        return self.add_trace(new_trace, row=row, col=col)
+
     def add_isosurface(
         self,
         autocolorscale=None,
@@ -6414,6 +7855,7 @@ class Figure(BaseFigure):
         idssrc=None,
         isomax=None,
         isomin=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         meta=None,
@@ -6422,6 +7864,7 @@ class Figure(BaseFigure):
         opacity=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         slices=None,
         spaceframe=None,
@@ -6499,7 +7942,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -6536,11 +7979,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -6565,6 +8013,10 @@ class Figure(BaseFigure):
             Sets the maximum boundary for iso-surface plot.
         isomin
             Sets the minimum boundary for iso-surface plot.
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.isosurface.Lighting instance or
             dict with compatible properties
@@ -6607,6 +8059,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -6710,6 +8165,7 @@ class Figure(BaseFigure):
             idssrc=idssrc,
             isomax=isomax,
             isomin=isomin,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             meta=meta,
@@ -6718,6 +8174,7 @@ class Figure(BaseFigure):
             opacity=opacity,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             slices=slices,
             spaceframe=spaceframe,
@@ -6770,12 +8227,14 @@ class Figure(BaseFigure):
         ids=None,
         idssrc=None,
         intensity=None,
+        intensitymode=None,
         intensitysrc=None,
         isrc=None,
         j=None,
         jsrc=None,
         k=None,
         ksrc=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         meta=None,
@@ -6784,6 +8243,7 @@ class Figure(BaseFigure):
         opacity=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         stream=None,
         text=None,
@@ -6877,7 +8337,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -6925,11 +8385,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -6960,8 +8425,11 @@ class Figure(BaseFigure):
         idssrc
             Sets the source reference on plot.ly for  ids .
         intensity
-            Sets the vertex intensity values, used for plotting
-            fields on meshes
+            Sets the intensity values for vertices or cells as
+            defined by `intensitymode`. It can be used for plotting
+            fields on meshes.
+        intensitymode
+            Determines the source of `intensity` values.
         intensitysrc
             Sets the source reference on plot.ly for  intensity .
         isrc
@@ -6988,6 +8456,10 @@ class Figure(BaseFigure):
             is the third vertex of a triangle.
         ksrc
             Sets the source reference on plot.ly for  k .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.mesh3d.Lighting instance or dict
             with compatible properties
@@ -7030,6 +8502,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -7144,12 +8619,14 @@ class Figure(BaseFigure):
             ids=ids,
             idssrc=idssrc,
             intensity=intensity,
+            intensitymode=intensitymode,
             intensitysrc=intensitysrc,
             isrc=isrc,
             j=j,
             jsrc=jsrc,
             k=k,
             ksrc=ksrc,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             meta=meta,
@@ -7158,6 +8635,7 @@ class Figure(BaseFigure):
             opacity=opacity,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             stream=stream,
             text=text,
@@ -7530,11 +9008,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -7652,7 +9135,9 @@ class Figure(BaseFigure):
         domain=None,
         ids=None,
         idssrc=None,
+        labelangle=None,
         labelfont=None,
+        labelside=None,
         line=None,
         meta=None,
         metasrc=None,
@@ -7700,8 +9185,20 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        labelangle
+            Sets the angle of the labels with respect to the
+            horizontal. For example, a `tickangle` of -90 draws the
+            labels vertically. Tilted labels with "labelangle" may
+            be positioned better inside margins when
+            `labelposition` is set to "bottom".
         labelfont
             Sets the font for the `dimension` labels.
+        labelside
+            Specifies the location of the `label`. "top" positions
+            labels above, next to the title "bottom" positions
+            labels below the graph Tilted labels with "labelangle"
+            may be positioned better inside margins when
+            `labelposition` is set to "bottom".
         line
             plotly.graph_objects.parcoords.Line instance or dict
             with compatible properties
@@ -7778,7 +9275,9 @@ class Figure(BaseFigure):
             domain=domain,
             ids=ids,
             idssrc=idssrc,
+            labelangle=labelangle,
             labelfont=labelfont,
+            labelside=labelside,
             line=line,
             meta=meta,
             metasrc=metasrc,
@@ -7795,6 +9294,7 @@ class Figure(BaseFigure):
 
     def add_pie(
         self,
+        automargin=None,
         customdata=None,
         customdatasrc=None,
         direction=None,
@@ -7811,6 +9311,7 @@ class Figure(BaseFigure):
         ids=None,
         idssrc=None,
         insidetextfont=None,
+        insidetextorientation=None,
         label0=None,
         labels=None,
         labelssrc=None,
@@ -7834,6 +9335,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         title=None,
         titlefont=None,
         titleposition=None,
@@ -7855,6 +9358,9 @@ class Figure(BaseFigure):
 
         Parameters
         ----------
+        automargin
+            Determines whether outside text labels can push the
+            margins.
         customdata
             Assigns extra data each datum. This may be useful when
             listening to hover, click and selection events. Note
@@ -7889,11 +9395,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -7923,6 +9434,13 @@ class Figure(BaseFigure):
         insidetextfont
             Sets the font used for `textinfo` lying inside the
             sector.
+        insidetextorientation
+            Determines the orientation of text inside slices. With
+            "auto" the texts may automatically be rotated to fit
+            with the maximum size inside the slice. Using
+            "horizontal" option forces text to be horizontal. Using
+            "radial" option forces text to be radial. Using
+            "tangential" option forces text to be tangential.
         label0
             Alternate to `labels`. Builds a numeric set of labels.
             Use with `dlabel` where `label0` is the starting label
@@ -8006,6 +9524,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `label`,
+            `color`, `value`, `percent` and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         title
             plotly.graph_objects.pie.Title instance or dict with
             compatible properties
@@ -8064,6 +9602,7 @@ class Figure(BaseFigure):
         Figure
         """
         new_trace = Pie(
+            automargin=automargin,
             customdata=customdata,
             customdatasrc=customdatasrc,
             direction=direction,
@@ -8080,6 +9619,7 @@ class Figure(BaseFigure):
             ids=ids,
             idssrc=idssrc,
             insidetextfont=insidetextfont,
+            insidetextorientation=insidetextorientation,
             label0=label0,
             labels=labels,
             labelssrc=labelssrc,
@@ -8103,6 +9643,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             title=title,
             titlefont=titlefont,
             titleposition=titleposition,
@@ -8501,9 +10043,9 @@ class Figure(BaseFigure):
             `uid` that stays with it as it moves.
         valueformat
             Sets the value formatting rule using d3 formatting
-            mini-language which is similar to those of Python. See 
-            https://github.com/d3/d3-format/blob/master/README.md#l
-            ocale_format
+            mini-language which is similar to those of Python. See
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format
         valuesuffix
             Adds a unit to follow the value in the hover tooltip.
             Add a space if a separation is necessary from the
@@ -8599,6 +10141,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         tsrc=None,
         uid=None,
         uirevision=None,
@@ -8717,11 +10261,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -8859,6 +10408,25 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         tsrc
             Sets the source reference on plot.ly for  t .
         uid
@@ -8989,6 +10557,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             tsrc=tsrc,
             uid=uid,
             uirevision=uirevision,
@@ -9044,6 +10614,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         visible=None,
@@ -9107,11 +10679,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -9214,6 +10791,25 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -9307,6 +10903,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             visible=visible,
@@ -9362,6 +10960,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         unselected=None,
@@ -9391,8 +10991,8 @@ class Figure(BaseFigure):
             Sets the source reference on plot.ly for  b .
         carpet
             An identifier for this carpet, so that `scattercarpet`
-            and `scattercontour` traces can specify a carpet plot
-            on which they lie
+            and `contourcarpet` traces can specify a carpet plot on
+            which they lie
         connectgaps
             Determines whether or not gaps (i.e. {nan} or missing
             values) in the provided data arrays are connected.
@@ -9440,11 +11040,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -9540,6 +11145,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `a`, `b` and
+            `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -9641,6 +11266,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
@@ -9656,9 +11283,11 @@ class Figure(BaseFigure):
         connectgaps=None,
         customdata=None,
         customdatasrc=None,
+        featureidkey=None,
         fill=None,
         fillcolor=None,
         geo=None,
+        geojson=None,
         hoverinfo=None,
         hoverinfosrc=None,
         hoverlabel=None,
@@ -9692,6 +11321,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         unselected=None,
@@ -9720,6 +11351,11 @@ class Figure(BaseFigure):
             the markers DOM elements
         customdatasrc
             Sets the source reference on plot.ly for  customdata .
+        featureidkey
+            Sets the key in GeoJSON features which is used as id to
+            match the items included in the `locations` array. Only
+            has an effect when `geojson` is set. Support nested
+            property, for example "properties.name".
         fill
             Sets the area to fill with a solid color. Use with
             `fillcolor` if not "none". "toself" connects the
@@ -9735,6 +11371,14 @@ class Figure(BaseFigure):
             value), the geospatial coordinates refer to
             `layout.geo`. If "geo2", the geospatial coordinates
             refer to `layout.geo2`, and so on.
+        geojson
+            Sets optional GeoJSON data associated with this trace.
+            If not given, the features on the base map are used
+            when `locations` is set. It can be set as a valid
+            GeoJSON object or as a URL string. Note that we only
+            accept GeoJSONs of type "FeatureCollection" or
+            "Feature" with geometries of type "Polygon" or
+            "MultiPolygon".
         hoverinfo
             Determines which trace information appear on hover. If
             `none` or `skip` are set, no information is displayed
@@ -9751,11 +11395,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -9794,7 +11443,11 @@ class Figure(BaseFigure):
             with compatible properties
         locationmode
             Determines the set of locations used to match entries
-            in `locations` to regions on the map.
+            in `locations` to regions on the map. Values "ISO-3",
+            "USA-states", *country names* correspond to features on
+            the base map and value "geojson-id" corresponds to
+            features from a custom GeoJSON linked to the `geojson`
+            attribute.
         locations
             Sets the coordinates via location IDs or names.
             Coordinates correspond to the centroid of each location
@@ -9870,6 +11523,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `lat`, `lon`,
+            `location` and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -9917,9 +11590,11 @@ class Figure(BaseFigure):
             connectgaps=connectgaps,
             customdata=customdata,
             customdatasrc=customdatasrc,
+            featureidkey=featureidkey,
             fill=fill,
             fillcolor=fillcolor,
             geo=geo,
+            geojson=geojson,
             hoverinfo=hoverinfo,
             hoverinfosrc=hoverinfosrc,
             hoverlabel=hoverlabel,
@@ -9953,6 +11628,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
@@ -9998,6 +11675,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         unselected=None,
@@ -10090,11 +11769,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -10186,6 +11870,25 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -10305,6 +12008,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
@@ -10325,6 +12030,7 @@ class Figure(BaseFigure):
 
     def add_scattermapbox(
         self,
+        below=None,
         connectgaps=None,
         customdata=None,
         customdatasrc=None,
@@ -10360,6 +12066,8 @@ class Figure(BaseFigure):
         textfont=None,
         textposition=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         unselected=None,
@@ -10377,6 +12085,12 @@ class Figure(BaseFigure):
 
         Parameters
         ----------
+        below
+            Determines if this scattermapbox trace's layers are to
+            be inserted before the layer with the specified ID. By
+            default, scattermapbox layers are inserted above all
+            the base layers. To place the scattermapbox layers
+            above every other layer, set `below` to "''".
         connectgaps
             Determines whether or not gaps (i.e. {nan} or missing
             values) in the provided data arrays are connected.
@@ -10412,11 +12126,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -10523,6 +12242,26 @@ class Figure(BaseFigure):
             to the (x,y) coordinates.
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `lat`, `lon`
+            and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -10567,6 +12306,7 @@ class Figure(BaseFigure):
         Figure
         """
         new_trace = Scattermapbox(
+            below=below,
             connectgaps=connectgaps,
             customdata=customdata,
             customdatasrc=customdatasrc,
@@ -10602,6 +12342,8 @@ class Figure(BaseFigure):
             textfont=textfont,
             textposition=textposition,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
@@ -10651,6 +12393,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         theta=None,
         theta0=None,
         thetasrc=None,
@@ -10735,11 +12479,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -10849,6 +12598,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `r`, `theta`
+            and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         theta
             Sets the angular coordinates
         theta0
@@ -10943,6 +12712,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             theta=theta,
             theta0=theta0,
             thetasrc=thetasrc,
@@ -10994,6 +12765,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         theta=None,
         theta0=None,
         thetasrc=None,
@@ -11077,11 +12850,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -11191,6 +12969,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `r`, `theta`
+            and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         theta
             Sets the angular coordinates
         theta0
@@ -11283,6 +13081,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             theta=theta,
             theta0=theta0,
             thetasrc=thetasrc,
@@ -11338,6 +13138,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         unselected=None,
@@ -11432,11 +13234,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -11545,6 +13352,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `a`, `b`, `c`
+            and `text`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -11630,6 +13457,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             unselected=unselected,
@@ -11725,11 +13554,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -11925,6 +13759,7 @@ class Figure(BaseFigure):
         hovertext=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         maxdisplayed=None,
@@ -11934,6 +13769,7 @@ class Figure(BaseFigure):
         opacity=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         sizeref=None,
         starts=None,
@@ -11967,7 +13803,9 @@ class Figure(BaseFigure):
         `u`, `v`, and `w`.  By default, the tubes' starting positions
         will be cut from the vector field's x-z plane at its minimum y
         value. To specify your own starting position, use attributes
-        `starts.x`, `starts.y` and `starts.z`.
+        `starts.x`, `starts.y` and `starts.z`. The color is encoded by
+        the norm of (u, v, w), and the local radius by the divergence
+        of (u, v, w).
 
         Parameters
         ----------
@@ -12011,7 +13849,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -12041,11 +13879,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -12066,6 +13909,10 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.streamtube.Lighting instance or
             dict with compatible properties
@@ -12111,6 +13958,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -12212,6 +14062,7 @@ class Figure(BaseFigure):
             hovertext=hovertext,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             maxdisplayed=maxdisplayed,
@@ -12221,6 +14072,7 @@ class Figure(BaseFigure):
             opacity=opacity,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             sizeref=sizeref,
             starts=starts,
@@ -12248,6 +14100,7 @@ class Figure(BaseFigure):
     def add_sunburst(
         self,
         branchvalues=None,
+        count=None,
         customdata=None,
         customdatasrc=None,
         domain=None,
@@ -12261,6 +14114,7 @@ class Figure(BaseFigure):
         ids=None,
         idssrc=None,
         insidetextfont=None,
+        insidetextorientation=None,
         labels=None,
         labelssrc=None,
         leaf=None,
@@ -12279,6 +14133,8 @@ class Figure(BaseFigure):
         textfont=None,
         textinfo=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         uid=None,
         uirevision=None,
         values=None,
@@ -12304,6 +14160,10 @@ class Figure(BaseFigure):
             in `values` corresponding to the root and the branches
             sectors are taken to be the extra part not part of the
             sum of the values at their leaves.
+        count
+            Determines default for `values` when it is not
+            provided, by inferring a 1 for each of the "leaves"
+            and/or "branches", otherwise 0.
         customdata
             Assigns extra data each datum. This may be useful when
             listening to hover, click and selection events. Note
@@ -12330,16 +14190,23 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
-            available.  Anything contained in tag `<extra>` is
-            displayed in the secondary box, for example
+            available. variables `currentPath`, `root`, `entry`,
+            `percentRoot`, `percentEntry` and `percentParent`.
+            Anything contained in tag `<extra>` is displayed in the
+            secondary box, for example
             "<extra>{fullData.name}</extra>". To hide the secondary
             box completely, use an empty tag `<extra></extra>`.
         hovertemplatesrc
@@ -12362,25 +14229,32 @@ class Figure(BaseFigure):
         insidetextfont
             Sets the font used for `textinfo` lying inside the
             sector.
+        insidetextorientation
+            Determines the orientation of text inside slices. With
+            "auto" the texts may automatically be rotated to fit
+            with the maximum size inside the slice. Using
+            "horizontal" option forces text to be horizontal. Using
+            "radial" option forces text to be radial. Using
+            "tangential" option forces text to be tangential.
         labels
-            Sets the labels of each of the sunburst sectors.
+            Sets the labels of each of the sectors.
         labelssrc
             Sets the source reference on plot.ly for  labels .
         leaf
             plotly.graph_objects.sunburst.Leaf instance or dict
             with compatible properties
         level
-            Sets the level from which this sunburst trace hierarchy
-            is rendered. Set `level` to `''` to start the sunburst
-            from the root node in the hierarchy. Must be an "id" if
-            `ids` is filled in, otherwise plotly attempts to find a
-            matching item in `labels`.
+            Sets the level from which this trace hierarchy is
+            rendered. Set `level` to `''` to start from the root
+            node in the hierarchy. Must be an "id" if `ids` is
+            filled in, otherwise plotly attempts to find a matching
+            item in `labels`.
         marker
             plotly.graph_objects.sunburst.Marker instance or dict
             with compatible properties
         maxdepth
-            Sets the number of rendered sunburst rings from any
-            given `level`. Set `maxdepth` to "-1" to render all the
+            Sets the number of rendered sectors from any given
+            `level`. Set `maxdepth` to "-1" to render all the
             levels in the hierarchy.
         meta
             Assigns extra meta information associated with this
@@ -12404,15 +14278,18 @@ class Figure(BaseFigure):
             Sets the opacity of the trace.
         outsidetextfont
             Sets the font used for `textinfo` lying outside the
-            sector.
+            sector. This option refers to the root of the hierarchy
+            presented at the center of a sunburst graph. Please
+            note that if a hierarchy has multiple root nodes, this
+            option won't have any effect and `insidetextfont` would
+            be used.
         parents
-            Sets the parent sectors for each of the sunburst
-            sectors. Empty string items '' are understood to
-            reference the root node in the hierarchy. If `ids` is
-            filled, `parents` items are understood to be "ids"
-            themselves. When `ids` is not set, plotly attempts to
-            find matching items in `labels`, but beware they must
-            be unique.
+            Sets the parent sectors for each of the sectors. Empty
+            string items '' are understood to reference the root
+            node in the hierarchy. If `ids` is filled, `parents`
+            items are understood to be "ids" themselves. When `ids`
+            is not set, plotly attempts to find matching items in
+            `labels`, but beware they must be unique.
         parentssrc
             Sets the source reference on plot.ly for  parents .
         stream
@@ -12430,6 +14307,27 @@ class Figure(BaseFigure):
             Determines which trace information appear on the graph.
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables
+            `currentPath`, `root`, `entry`, `percentRoot`,
+            `percentEntry`, `percentParent`, `label` and `value`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         uid
             Assign an id to this trace, Use this to provide object
             constancy between traces during animations and
@@ -12453,9 +14351,9 @@ class Figure(BaseFigure):
             preserve user-driven changes if you give each trace a
             `uid` that stays with it as it moves.
         values
-            Sets the values associated with each of the sunburst
-            sectors. Use with `branchvalues` to determine how the
-            values are summed.
+            Sets the values associated with each of the sectors.
+            Use with `branchvalues` to determine how the values are
+            summed.
         valuessrc
             Sets the source reference on plot.ly for  values .
         visible
@@ -12478,6 +14376,7 @@ class Figure(BaseFigure):
         """
         new_trace = Sunburst(
             branchvalues=branchvalues,
+            count=count,
             customdata=customdata,
             customdatasrc=customdatasrc,
             domain=domain,
@@ -12491,6 +14390,7 @@ class Figure(BaseFigure):
             ids=ids,
             idssrc=idssrc,
             insidetextfont=insidetextfont,
+            insidetextorientation=insidetextorientation,
             labels=labels,
             labelssrc=labelssrc,
             leaf=leaf,
@@ -12509,6 +14409,8 @@ class Figure(BaseFigure):
             textfont=textfont,
             textinfo=textinfo,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             uid=uid,
             uirevision=uirevision,
             values=values,
@@ -12542,6 +14444,7 @@ class Figure(BaseFigure):
         hovertextsrc=None,
         ids=None,
         idssrc=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         meta=None,
@@ -12550,6 +14453,7 @@ class Figure(BaseFigure):
         opacity=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         stream=None,
         surfacecolor=None,
@@ -12627,7 +14531,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -12668,11 +14572,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -12693,6 +14602,10 @@ class Figure(BaseFigure):
             array of strings, not numbers or any other type.
         idssrc
             Sets the source reference on plot.ly for  ids .
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.surface.Lighting instance or dict
             with compatible properties
@@ -12735,6 +14648,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -12835,6 +14751,7 @@ class Figure(BaseFigure):
             hovertextsrc=hovertextsrc,
             ids=ids,
             idssrc=idssrc,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             meta=meta,
@@ -12843,6 +14760,7 @@ class Figure(BaseFigure):
             opacity=opacity,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             stream=stream,
             surfacecolor=surfacecolor,
@@ -13035,6 +14953,330 @@ class Figure(BaseFigure):
         )
         return self.add_trace(new_trace, row=row, col=col)
 
+    def add_treemap(
+        self,
+        branchvalues=None,
+        count=None,
+        customdata=None,
+        customdatasrc=None,
+        domain=None,
+        hoverinfo=None,
+        hoverinfosrc=None,
+        hoverlabel=None,
+        hovertemplate=None,
+        hovertemplatesrc=None,
+        hovertext=None,
+        hovertextsrc=None,
+        ids=None,
+        idssrc=None,
+        insidetextfont=None,
+        labels=None,
+        labelssrc=None,
+        level=None,
+        marker=None,
+        maxdepth=None,
+        meta=None,
+        metasrc=None,
+        name=None,
+        opacity=None,
+        outsidetextfont=None,
+        parents=None,
+        parentssrc=None,
+        pathbar=None,
+        stream=None,
+        text=None,
+        textfont=None,
+        textinfo=None,
+        textposition=None,
+        textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
+        tiling=None,
+        uid=None,
+        uirevision=None,
+        values=None,
+        valuessrc=None,
+        visible=None,
+        row=None,
+        col=None,
+        **kwargs
+    ):
+        """
+        Add a new Treemap trace
+        
+        Visualize hierarchal data from leaves (and/or outer branches)
+        towards root with rectangles. The treemap sectors are
+        determined by the entries in "labels" or "ids" and in
+        "parents".
+
+        Parameters
+        ----------
+        branchvalues
+            Determines how the items in `values` are summed. When
+            set to "total", items in `values` are taken to be value
+            of all its descendants. When set to "remainder", items
+            in `values` corresponding to the root and the branches
+            sectors are taken to be the extra part not part of the
+            sum of the values at their leaves.
+        count
+            Determines default for `values` when it is not
+            provided, by inferring a 1 for each of the "leaves"
+            and/or "branches", otherwise 0.
+        customdata
+            Assigns extra data each datum. This may be useful when
+            listening to hover, click and selection events. Note
+            that, "scatter" traces also appends customdata items in
+            the markers DOM elements
+        customdatasrc
+            Sets the source reference on plot.ly for  customdata .
+        domain
+            plotly.graph_objects.treemap.Domain instance or dict
+            with compatible properties
+        hoverinfo
+            Determines which trace information appear on hover. If
+            `none` or `skip` are set, no information is displayed
+            upon hovering. But, if `none` is set, click and hover
+            events are still fired.
+        hoverinfosrc
+            Sets the source reference on plot.ly for  hoverinfo .
+        hoverlabel
+            plotly.graph_objects.treemap.Hoverlabel instance or
+            dict with compatible properties
+        hovertemplate
+            Template string used for rendering the information that
+            appear on hover box. Note that this will override
+            `hoverinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
+            https://plot.ly/javascript/plotlyjs-events/#event-data.
+            Additionally, every attributes that can be specified
+            per-point (the ones that are `arrayOk: true`) are
+            available. variables `currentPath`, `root`, `entry`,
+            `percentRoot`, `percentEntry` and `percentParent`.
+            Anything contained in tag `<extra>` is displayed in the
+            secondary box, for example
+            "<extra>{fullData.name}</extra>". To hide the secondary
+            box completely, use an empty tag `<extra></extra>`.
+        hovertemplatesrc
+            Sets the source reference on plot.ly for  hovertemplate
+            .
+        hovertext
+            Sets hover text elements associated with each sector.
+            If a single string, the same string appears for all
+            data points. If an array of string, the items are
+            mapped in order of this trace's sectors. To be seen,
+            trace `hoverinfo` must contain a "text" flag.
+        hovertextsrc
+            Sets the source reference on plot.ly for  hovertext .
+        ids
+            Assigns id labels to each datum. These ids for object
+            constancy of data points during animation. Should be an
+            array of strings, not numbers or any other type.
+        idssrc
+            Sets the source reference on plot.ly for  ids .
+        insidetextfont
+            Sets the font used for `textinfo` lying inside the
+            sector.
+        labels
+            Sets the labels of each of the sectors.
+        labelssrc
+            Sets the source reference on plot.ly for  labels .
+        level
+            Sets the level from which this trace hierarchy is
+            rendered. Set `level` to `''` to start from the root
+            node in the hierarchy. Must be an "id" if `ids` is
+            filled in, otherwise plotly attempts to find a matching
+            item in `labels`.
+        marker
+            plotly.graph_objects.treemap.Marker instance or dict
+            with compatible properties
+        maxdepth
+            Sets the number of rendered sectors from any given
+            `level`. Set `maxdepth` to "-1" to render all the
+            levels in the hierarchy.
+        meta
+            Assigns extra meta information associated with this
+            trace that can be used in various text attributes.
+            Attributes such as trace `name`, graph, axis and
+            colorbar `title.text`, annotation `text`
+            `rangeselector`, `updatemenues` and `sliders` `label`
+            text all support `meta`. To access the trace `meta`
+            values in an attribute in the same trace, simply use
+            `%{meta[i]}` where `i` is the index or key of the
+            `meta` item in question. To access trace `meta` in
+            layout attributes, use `%{data[n[.meta[i]}` where `i`
+            is the index or key of the `meta` and `n` is the trace
+            index.
+        metasrc
+            Sets the source reference on plot.ly for  meta .
+        name
+            Sets the trace name. The trace name appear as the
+            legend item and on hover.
+        opacity
+            Sets the opacity of the trace.
+        outsidetextfont
+            Sets the font used for `textinfo` lying outside the
+            sector. This option refers to the root of the hierarchy
+            presented on top left corner of a treemap graph. Please
+            note that if a hierarchy has multiple root nodes, this
+            option won't have any effect and `insidetextfont` would
+            be used.
+        parents
+            Sets the parent sectors for each of the sectors. Empty
+            string items '' are understood to reference the root
+            node in the hierarchy. If `ids` is filled, `parents`
+            items are understood to be "ids" themselves. When `ids`
+            is not set, plotly attempts to find matching items in
+            `labels`, but beware they must be unique.
+        parentssrc
+            Sets the source reference on plot.ly for  parents .
+        pathbar
+            plotly.graph_objects.treemap.Pathbar instance or dict
+            with compatible properties
+        stream
+            plotly.graph_objects.treemap.Stream instance or dict
+            with compatible properties
+        text
+            Sets text elements associated with each sector. If
+            trace `textinfo` contains a "text" flag, these elements
+            will be seen on the chart. If trace `hoverinfo`
+            contains a "text" flag and "hovertext" is not set,
+            these elements will be seen in the hover labels.
+        textfont
+            Sets the font used for `textinfo`.
+        textinfo
+            Determines which trace information appear on the graph.
+        textposition
+            Sets the positions of the `text` elements.
+        textsrc
+            Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables
+            `currentPath`, `root`, `entry`, `percentRoot`,
+            `percentEntry`, `percentParent`, `label` and `value`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
+        tiling
+            plotly.graph_objects.treemap.Tiling instance or dict
+            with compatible properties
+        uid
+            Assign an id to this trace, Use this to provide object
+            constancy between traces during animations and
+            transitions.
+        uirevision
+            Controls persistence of some user-driven changes to the
+            trace: `constraintrange` in `parcoords` traces, as well
+            as some `editable: true` modifications such as `name`
+            and `colorbar.title`. Defaults to `layout.uirevision`.
+            Note that other user-driven trace attribute changes are
+            controlled by `layout` attributes: `trace.visible` is
+            controlled by `layout.legend.uirevision`,
+            `selectedpoints` is controlled by
+            `layout.selectionrevision`, and `colorbar.(x|y)`
+            (accessible with `config: {editable: true}`) is
+            controlled by `layout.editrevision`. Trace changes are
+            tracked by `uid`, which only falls back on trace index
+            if no `uid` is provided. So if your app can add/remove
+            traces before the end of the `data` array, such that
+            the same trace has a different index, you can still
+            preserve user-driven changes if you give each trace a
+            `uid` that stays with it as it moves.
+        values
+            Sets the values associated with each of the sectors.
+            Use with `branchvalues` to determine how the values are
+            summed.
+        valuessrc
+            Sets the source reference on plot.ly for  values .
+        visible
+            Determines whether or not this trace is visible. If
+            "legendonly", the trace is not drawn, but can appear as
+            a legend item (provided that the legend itself is
+            visible).
+        row : int or None (default)
+            Subplot row index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+        col : int or None (default)
+            Subplot col index (starting from 1) for the trace to be
+            added. Only valid if figure was created using
+            `plotly.tools.make_subplots`
+
+        Returns
+        -------
+        Figure
+        """
+        new_trace = Treemap(
+            branchvalues=branchvalues,
+            count=count,
+            customdata=customdata,
+            customdatasrc=customdatasrc,
+            domain=domain,
+            hoverinfo=hoverinfo,
+            hoverinfosrc=hoverinfosrc,
+            hoverlabel=hoverlabel,
+            hovertemplate=hovertemplate,
+            hovertemplatesrc=hovertemplatesrc,
+            hovertext=hovertext,
+            hovertextsrc=hovertextsrc,
+            ids=ids,
+            idssrc=idssrc,
+            insidetextfont=insidetextfont,
+            labels=labels,
+            labelssrc=labelssrc,
+            level=level,
+            marker=marker,
+            maxdepth=maxdepth,
+            meta=meta,
+            metasrc=metasrc,
+            name=name,
+            opacity=opacity,
+            outsidetextfont=outsidetextfont,
+            parents=parents,
+            parentssrc=parentssrc,
+            pathbar=pathbar,
+            stream=stream,
+            text=text,
+            textfont=textfont,
+            textinfo=textinfo,
+            textposition=textposition,
+            textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
+            tiling=tiling,
+            uid=uid,
+            uirevision=uirevision,
+            values=values,
+            valuessrc=valuessrc,
+            visible=visible,
+            **kwargs
+        )
+        return self.add_trace(new_trace, row=row, col=col)
+
     def add_violin(
         self,
         alignmentgroup=None,
@@ -13150,11 +15392,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -13240,7 +15487,9 @@ class Figure(BaseFigure):
             or greater than 4*Q3-3*Q1 are highlighted (see
             `outliercolor`) If "all", all sample points are shown
             If False, only the violins are shown with no sample
-            points
+            points. Defaults to "suspectedoutliers" when
+            `marker.outliercolor` or `marker.line.outliercolor` is
+            set, otherwise defaults to "outliers".
         scalegroup
             If there are multiple violins that should be sized
             according to to some metric (see `scalemode`), link
@@ -13337,8 +15586,9 @@ class Figure(BaseFigure):
             Sets the x sample data or coordinates. See overview for
             more info.
         x0
-            Sets the x coordinate of the box. See overview for more
-            info.
+            Sets the x coordinate for single-box traces or the
+            starting coordinate for multi-box traces set using
+            q1/median/q3. See overview for more info.
         xaxis
             Sets a reference between this trace's x coordinates and
             a 2D cartesian x axis. If "x" (the default value), the
@@ -13350,8 +15600,9 @@ class Figure(BaseFigure):
             Sets the y sample data or coordinates. See overview for
             more info.
         y0
-            Sets the y coordinate of the box. See overview for more
-            info.
+            Sets the y coordinate for single-box traces or the
+            starting coordinate for multi-box traces set using
+            q1/median/q3. See overview for more info.
         yaxis
             Sets a reference between this trace's y coordinates and
             a 2D cartesian y axis. If "y" (the default value), the
@@ -13466,6 +15717,7 @@ class Figure(BaseFigure):
         idssrc=None,
         isomax=None,
         isomin=None,
+        legendgroup=None,
         lighting=None,
         lightposition=None,
         meta=None,
@@ -13475,6 +15727,7 @@ class Figure(BaseFigure):
         opacityscale=None,
         reversescale=None,
         scene=None,
+        showlegend=None,
         showscale=None,
         slices=None,
         spaceframe=None,
@@ -13552,7 +15805,7 @@ class Figure(BaseFigure):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -13589,11 +15842,16 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -13618,6 +15876,10 @@ class Figure(BaseFigure):
             Sets the maximum boundary for iso-surface plot.
         isomin
             Sets the minimum boundary for iso-surface plot.
+        legendgroup
+            Sets the legend group for this trace. Traces part of
+            the same legend group hide/show at the same time when
+            toggling legend items.
         lighting
             plotly.graph_objects.volume.Lighting instance or dict
             with compatible properties
@@ -13671,6 +15933,9 @@ class Figure(BaseFigure):
             the (x,y,z) coordinates refer to `layout.scene`. If
             "scene2", the (x,y,z) coordinates refer to
             `layout.scene2`, and so on.
+        showlegend
+            Determines whether or not an item corresponding to this
+            trace is shown in the legend.
         showscale
             Determines whether or not a colorbar is displayed for
             this trace.
@@ -13774,6 +16039,7 @@ class Figure(BaseFigure):
             idssrc=idssrc,
             isomax=isomax,
             isomin=isomin,
+            legendgroup=legendgroup,
             lighting=lighting,
             lightposition=lightposition,
             meta=meta,
@@ -13783,6 +16049,7 @@ class Figure(BaseFigure):
             opacityscale=opacityscale,
             reversescale=reversescale,
             scene=scene,
+            showlegend=showlegend,
             showscale=showscale,
             slices=slices,
             spaceframe=spaceframe,
@@ -13851,6 +16118,8 @@ class Figure(BaseFigure):
         textposition=None,
         textpositionsrc=None,
         textsrc=None,
+        texttemplate=None,
+        texttemplatesrc=None,
         totals=None,
         uid=None,
         uirevision=None,
@@ -13931,16 +16200,22 @@ class Figure(BaseFigure):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
-            available.  Anything contained in tag `<extra>` is
-            displayed in the secondary box, for example
+            available. variables `initial`, `delta` and `final`.
+            Anything contained in tag `<extra>` is displayed in the
+            secondary box, for example
             "<extra>{fullData.name}</extra>". To hide the secondary
             box completely, use an empty tag `<extra></extra>`.
         hovertemplatesrc
@@ -14065,6 +16340,26 @@ class Figure(BaseFigure):
             .
         textsrc
             Sets the source reference on plot.ly for  text .
+        texttemplate
+            Template string used for rendering the information text
+            that appear on points. Note that this will override
+            `textinfo`. Variables are inserted using %{variable},
+            for example "y: %{y}". Numbers are formatted using
+            d3-format's syntax %{variable:d3-format}, for example
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. Every attributes
+            that can be specified per-point (the ones that are
+            `arrayOk: true`) are available. variables `initial`,
+            `delta`, `final` and `label`.
+        texttemplatesrc
+            Sets the source reference on plot.ly for  texttemplate
+            .
         totals
             plotly.graph_objects.waterfall.Totals instance or dict
             with compatible properties
@@ -14193,6 +16488,8 @@ class Figure(BaseFigure):
             textposition=textposition,
             textpositionsrc=textpositionsrc,
             textsrc=textsrc,
+            texttemplate=texttemplate,
+            texttemplatesrc=texttemplatesrc,
             totals=totals,
             uid=uid,
             uirevision=uirevision,
@@ -14269,7 +16566,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_coloraxes(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_coloraxes(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all coloraxis objects
         that satisfy the specified selection criteria
@@ -14285,6 +16584,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all coloraxis objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of coloraxis objects to select.
             To select coloraxis objects by row and column, the Figure
@@ -14301,7 +16604,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_coloraxes(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14363,7 +16666,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_geos(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_geos(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all geo objects
         that satisfy the specified selection criteria
@@ -14379,6 +16684,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all geo objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of geo objects to select.
             To select geo objects by row and column, the Figure
@@ -14395,7 +16704,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_geos(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14457,7 +16766,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_mapboxes(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_mapboxes(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all mapbox objects
         that satisfy the specified selection criteria
@@ -14473,6 +16784,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all mapbox objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of mapbox objects to select.
             To select mapbox objects by row and column, the Figure
@@ -14489,7 +16804,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_mapboxes(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14551,7 +16866,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_polars(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_polars(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all polar objects
         that satisfy the specified selection criteria
@@ -14567,6 +16884,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all polar objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of polar objects to select.
             To select polar objects by row and column, the Figure
@@ -14583,7 +16904,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_polars(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14645,7 +16966,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_scenes(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_scenes(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all scene objects
         that satisfy the specified selection criteria
@@ -14661,6 +16984,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all scene objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of scene objects to select.
             To select scene objects by row and column, the Figure
@@ -14677,7 +17004,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_scenes(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14739,7 +17066,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_ternaries(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_ternaries(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all ternary objects
         that satisfy the specified selection criteria
@@ -14755,6 +17084,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all ternary objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of ternary objects to select.
             To select ternary objects by row and column, the Figure
@@ -14771,7 +17104,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_ternaries(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14833,7 +17166,9 @@ class Figure(BaseFigure):
 
         return self
 
-    def update_xaxes(self, patch=None, selector=None, row=None, col=None, **kwargs):
+    def update_xaxes(
+        self, patch=None, selector=None, overwrite=False, row=None, col=None, **kwargs
+    ):
         """
         Perform a property update operation on all xaxis objects
         that satisfy the specified selection criteria
@@ -14849,6 +17184,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all xaxis objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of xaxis objects to select.
             To select xaxis objects by row and column, the Figure
@@ -14865,7 +17204,7 @@ class Figure(BaseFigure):
             Returns the Figure object that the method was called on
         """
         for obj in self.select_xaxes(selector=selector, row=row, col=col):
-            obj.update(patch, **kwargs)
+            obj.update(patch, overwrite=overwrite, **kwargs)
 
         return self
 
@@ -14956,7 +17295,14 @@ class Figure(BaseFigure):
         return self
 
     def update_yaxes(
-        self, patch=None, selector=None, row=None, col=None, secondary_y=None, **kwargs
+        self,
+        patch=None,
+        selector=None,
+        overwrite=False,
+        row=None,
+        col=None,
+        secondary_y=None,
+        **kwargs
     ):
         """
         Perform a property update operation on all yaxis objects
@@ -14973,6 +17319,10 @@ class Figure(BaseFigure):
             properties corresponding to all of the dictionary's keys, with
             values that exactly match the supplied values. If None
             (the default), all yaxis objects are selected.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         row, col: int or None (default None)
             Subplot row and column index of yaxis objects to select.
             To select yaxis objects by row and column, the Figure
@@ -15003,6 +17353,1124 @@ class Figure(BaseFigure):
         for obj in self.select_yaxes(
             selector=selector, row=row, col=col, secondary_y=secondary_y
         ):
+            obj.update(patch, overwrite=overwrite, **kwargs)
+
+        return self
+
+    def select_annotations(self, selector=None, row=None, col=None, secondary_y=None):
+        """
+        Select annotations from a particular subplot cell and/or annotations
+        that satisfy custom selection criteria.
+
+        Parameters
+        ----------
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Annotations will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all annotations are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of annotations to select.
+            To select annotations by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            annotation that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all annotations are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select annotations associated with the secondary
+              y-axis of the subplot.
+            * If False, only select annotations associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter annotations based on secondary
+              y-axis.
+
+            To select annotations by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        generator
+            Generator that iterates through all of the annotations that satisfy
+            all of the specified selection criteria
+        """
+        return self._select_annotations_like(
+            "annotations", selector=selector, row=row, col=col, secondary_y=secondary_y
+        )
+
+    def for_each_annotation(
+        self, fn, selector=None, row=None, col=None, secondary_y=None
+    ):
+        """
+        Apply a function to all annotations that satisfy the specified selection
+        criteria
+
+        Parameters
+        ----------
+        fn:
+            Function that inputs a single annotation object.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all annotations are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of annotations to select.
+            To select annotations by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            annotations that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all annotations are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select annotations associated with the secondary
+              y-axis of the subplot.
+            * If False, only select annotations associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter annotations based on secondary
+              y-axis.
+
+            To select annotations by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="annotations",
+            selector=selector,
+            row=row,
+            col=col,
+            secondary_y=secondary_y,
+        ):
+            fn(obj)
+
+        return self
+
+    def update_annotations(
+        self, patch, selector=None, row=None, col=None, secondary_y=None, **kwargs
+    ):
+        """
+        Perform a property update operation on all annotations that satisfy the
+        specified selection criteria
+
+        Parameters
+        ----------
+        patch: dict or None (default None)
+            Dictionary of property updates to be applied to all annotations that
+            satisfy the selection criteria.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all annotations are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of annotations to select.
+            To select annotations by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            annotation that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all annotations are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select annotations associated with the secondary
+              y-axis of the subplot.
+            * If False, only select annotations associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter annotations based on secondary
+              y-axis.
+
+            To select annotations by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        **kwargs
+            Additional property updates to apply to each selected annotation. If
+            a property is specified in both patch and in **kwargs then the
+            one in **kwargs takes precedence.
+
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="annotations",
+            selector=selector,
+            row=row,
+            col=col,
+            secondary_y=secondary_y,
+        ):
             obj.update(patch, **kwargs)
 
         return self
+
+    def add_annotation(
+        self,
+        arg=None,
+        align=None,
+        arrowcolor=None,
+        arrowhead=None,
+        arrowside=None,
+        arrowsize=None,
+        arrowwidth=None,
+        ax=None,
+        axref=None,
+        ay=None,
+        ayref=None,
+        bgcolor=None,
+        bordercolor=None,
+        borderpad=None,
+        borderwidth=None,
+        captureevents=None,
+        clicktoshow=None,
+        font=None,
+        height=None,
+        hoverlabel=None,
+        hovertext=None,
+        name=None,
+        opacity=None,
+        showarrow=None,
+        standoff=None,
+        startarrowhead=None,
+        startarrowsize=None,
+        startstandoff=None,
+        templateitemname=None,
+        text=None,
+        textangle=None,
+        valign=None,
+        visible=None,
+        width=None,
+        x=None,
+        xanchor=None,
+        xclick=None,
+        xref=None,
+        xshift=None,
+        y=None,
+        yanchor=None,
+        yclick=None,
+        yref=None,
+        yshift=None,
+        row=None,
+        col=None,
+        secondary_y=None,
+        **kwargs
+    ):
+        """
+        Create and add a new annotation to the figure's layout
+        
+        Parameters
+        ----------
+        arg
+            instance of Annotation or dict with compatible
+            properties
+        align
+            Sets the horizontal alignment of the `text` within the
+            box. Has an effect only if `text` spans more two or
+            more lines (i.e. `text` contains one or more <br> HTML
+            tags) or if an explicit width is set to override the
+            text width.
+        arrowcolor
+            Sets the color of the annotation arrow.
+        arrowhead
+            Sets the end annotation arrow head style.
+        arrowside
+            Sets the annotation arrow head position.
+        arrowsize
+            Sets the size of the end annotation arrow head,
+            relative to `arrowwidth`. A value of 1 (default) gives
+            a head about 3x as wide as the line.
+        arrowwidth
+            Sets the width (in px) of annotation arrow line.
+        ax
+            Sets the x component of the arrow tail about the arrow
+            head. If `axref` is `pixel`, a positive (negative)
+            component corresponds to an arrow pointing from right
+            to left (left to right). If `axref` is an axis, this is
+            an absolute value on that axis, like `x`, NOT a
+            relative value.
+        axref
+            Indicates in what terms the tail of the annotation
+            (ax,ay)  is specified. If `pixel`, `ax` is a relative
+            offset in pixels  from `x`. If set to an x axis id
+            (e.g. "x" or "x2"), `ax` is  specified in the same
+            terms as that axis. This is useful  for trendline
+            annotations which should continue to indicate  the
+            correct trend when zoomed.
+        ay
+            Sets the y component of the arrow tail about the arrow
+            head. If `ayref` is `pixel`, a positive (negative)
+            component corresponds to an arrow pointing from bottom
+            to top (top to bottom). If `ayref` is an axis, this is
+            an absolute value on that axis, like `y`, NOT a
+            relative value.
+        ayref
+            Indicates in what terms the tail of the annotation
+            (ax,ay)  is specified. If `pixel`, `ay` is a relative
+            offset in pixels  from `y`. If set to a y axis id (e.g.
+            "y" or "y2"), `ay` is  specified in the same terms as
+            that axis. This is useful  for trendline annotations
+            which should continue to indicate  the correct trend
+            when zoomed.
+        bgcolor
+            Sets the background color of the annotation.
+        bordercolor
+            Sets the color of the border enclosing the annotation
+            `text`.
+        borderpad
+            Sets the padding (in px) between the `text` and the
+            enclosing border.
+        borderwidth
+            Sets the width (in px) of the border enclosing the
+            annotation `text`.
+        captureevents
+            Determines whether the annotation text box captures
+            mouse move and click events, or allows those events to
+            pass through to data points in the plot that may be
+            behind the annotation. By default `captureevents` is
+            False unless `hovertext` is provided. If you use the
+            event `plotly_clickannotation` without `hovertext` you
+            must explicitly enable `captureevents`.
+        clicktoshow
+            Makes this annotation respond to clicks on the plot. If
+            you click a data point that exactly matches the `x` and
+            `y` values of this annotation, and it is hidden
+            (visible: false), it will appear. In "onoff" mode, you
+            must click the same point again to make it disappear,
+            so if you click multiple points, you can show multiple
+            annotations. In "onout" mode, a click anywhere else in
+            the plot (on another data point or not) will hide this
+            annotation. If you need to show/hide this annotation in
+            response to different `x` or `y` values, you can set
+            `xclick` and/or `yclick`. This is useful for example to
+            label the side of a bar. To label markers though,
+            `standoff` is preferred over `xclick` and `yclick`.
+        font
+            Sets the annotation text font.
+        height
+            Sets an explicit height for the text box. null
+            (default) lets the text set the box height. Taller text
+            will be clipped.
+        hoverlabel
+            plotly.graph_objects.layout.annotation.Hoverlabel
+            instance or dict with compatible properties
+        hovertext
+            Sets text to appear when hovering over this annotation.
+            If omitted or blank, no hover label will appear.
+        name
+            When used in a template, named items are created in the
+            output figure in addition to any items the figure
+            already has in this array. You can modify these items
+            in the output figure by making your own item with
+            `templateitemname` matching this `name` alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). Has no effect outside of a
+            template.
+        opacity
+            Sets the opacity of the annotation (text + arrow).
+        showarrow
+            Determines whether or not the annotation is drawn with
+            an arrow. If True, `text` is placed near the arrow's
+            tail. If False, `text` lines up with the `x` and `y`
+            provided.
+        standoff
+            Sets a distance, in pixels, to move the end arrowhead
+            away from the position it is pointing at, for example
+            to point at the edge of a marker independent of zoom.
+            Note that this shortens the arrow from the `ax` / `ay`
+            vector, in contrast to `xshift` / `yshift` which moves
+            everything by this amount.
+        startarrowhead
+            Sets the start annotation arrow head style.
+        startarrowsize
+            Sets the size of the start annotation arrow head,
+            relative to `arrowwidth`. A value of 1 (default) gives
+            a head about 3x as wide as the line.
+        startstandoff
+            Sets a distance, in pixels, to move the start arrowhead
+            away from the position it is pointing at, for example
+            to point at the edge of a marker independent of zoom.
+            Note that this shortens the arrow from the `ax` / `ay`
+            vector, in contrast to `xshift` / `yshift` which moves
+            everything by this amount.
+        templateitemname
+            Used to refer to a named item in this array in the
+            template. Named items from the template will be created
+            even without a matching item in the input figure, but
+            you can modify one by making an item with
+            `templateitemname` matching its `name`, alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). If there is no template or no
+            matching item, this item will be hidden unless you
+            explicitly show it with `visible: true`.
+        text
+            Sets the text associated with this annotation. Plotly
+            uses a subset of HTML tags to do things like newline
+            (<br>), bold (<b></b>), italics (<i></i>), hyperlinks
+            (<a href='...'></a>). Tags <em>, <sup>, <sub> <span>
+            are also supported.
+        textangle
+            Sets the angle at which the `text` is drawn with
+            respect to the horizontal.
+        valign
+            Sets the vertical alignment of the `text` within the
+            box. Has an effect only if an explicit height is set to
+            override the text height.
+        visible
+            Determines whether or not this annotation is visible.
+        width
+            Sets an explicit width for the text box. null (default)
+            lets the text set the box width. Wider text will be
+            clipped. There is no automatic wrapping; use <br> to
+            start a new line.
+        x
+            Sets the annotation's x position. If the axis `type` is
+            "log", then you must take the log of your desired
+            range. If the axis `type` is "date", it should be date
+            strings, like date data, though Date objects and unix
+            milliseconds will be accepted and converted to strings.
+            If the axis `type` is "category", it should be numbers,
+            using the scale where each category is assigned a
+            serial number from zero in the order it appears.
+        xanchor
+            Sets the text box's horizontal position anchor This
+            anchor binds the `x` position to the "left", "center"
+            or "right" of the annotation. For example, if `x` is
+            set to 1, `xref` to "paper" and `xanchor` to "right"
+            then the right-most portion of the annotation lines up
+            with the right-most edge of the plotting area. If
+            "auto", the anchor is equivalent to "center" for data-
+            referenced annotations or if there is an arrow, whereas
+            for paper-referenced with no arrow, the anchor picked
+            corresponds to the closest side.
+        xclick
+            Toggle this annotation when clicking a data point whose
+            `x` value is `xclick` rather than the annotation's `x`
+            value.
+        xref
+            Sets the annotation's x coordinate axis. If set to an x
+            axis id (e.g. "x" or "x2"), the `x` position refers to
+            an x coordinate If set to "paper", the `x` position
+            refers to the distance from the left side of the
+            plotting area in normalized coordinates where 0 (1)
+            corresponds to the left (right) side.
+        xshift
+            Shifts the position of the whole annotation and arrow
+            to the right (positive) or left (negative) by this many
+            pixels.
+        y
+            Sets the annotation's y position. If the axis `type` is
+            "log", then you must take the log of your desired
+            range. If the axis `type` is "date", it should be date
+            strings, like date data, though Date objects and unix
+            milliseconds will be accepted and converted to strings.
+            If the axis `type` is "category", it should be numbers,
+            using the scale where each category is assigned a
+            serial number from zero in the order it appears.
+        yanchor
+            Sets the text box's vertical position anchor This
+            anchor binds the `y` position to the "top", "middle" or
+            "bottom" of the annotation. For example, if `y` is set
+            to 1, `yref` to "paper" and `yanchor` to "top" then the
+            top-most portion of the annotation lines up with the
+            top-most edge of the plotting area. If "auto", the
+            anchor is equivalent to "middle" for data-referenced
+            annotations or if there is an arrow, whereas for paper-
+            referenced with no arrow, the anchor picked corresponds
+            to the closest side.
+        yclick
+            Toggle this annotation when clicking a data point whose
+            `y` value is `yclick` rather than the annotation's `y`
+            value.
+        yref
+            Sets the annotation's y coordinate axis. If set to an y
+            axis id (e.g. "y" or "y2"), the `y` position refers to
+            an y coordinate If set to "paper", the `y` position
+            refers to the distance from the bottom of the plotting
+            area in normalized coordinates where 0 (1) corresponds
+            to the bottom (top).
+        yshift
+            Shifts the position of the whole annotation and arrow
+            up (positive) or down (negative) by this many pixels.
+        row
+            Subplot row for annotation
+        col
+            Subplot column for annotation
+        secondary_y
+            Whether to add annotation to secondary y-axis
+
+        Returns
+        -------
+        Figure
+        """
+        new_obj = _layout.Annotation(
+            arg,
+            align=align,
+            arrowcolor=arrowcolor,
+            arrowhead=arrowhead,
+            arrowside=arrowside,
+            arrowsize=arrowsize,
+            arrowwidth=arrowwidth,
+            ax=ax,
+            axref=axref,
+            ay=ay,
+            ayref=ayref,
+            bgcolor=bgcolor,
+            bordercolor=bordercolor,
+            borderpad=borderpad,
+            borderwidth=borderwidth,
+            captureevents=captureevents,
+            clicktoshow=clicktoshow,
+            font=font,
+            height=height,
+            hoverlabel=hoverlabel,
+            hovertext=hovertext,
+            name=name,
+            opacity=opacity,
+            showarrow=showarrow,
+            standoff=standoff,
+            startarrowhead=startarrowhead,
+            startarrowsize=startarrowsize,
+            startstandoff=startstandoff,
+            templateitemname=templateitemname,
+            text=text,
+            textangle=textangle,
+            valign=valign,
+            visible=visible,
+            width=width,
+            x=x,
+            xanchor=xanchor,
+            xclick=xclick,
+            xref=xref,
+            xshift=xshift,
+            y=y,
+            yanchor=yanchor,
+            yclick=yclick,
+            yref=yref,
+            yshift=yshift,
+            **kwargs
+        )
+        return self._add_annotation_like(
+            "annotation",
+            "annotations",
+            new_obj,
+            row=row,
+            col=col,
+            secondary_y=secondary_y,
+        )
+
+    def select_layout_images(self, selector=None, row=None, col=None, secondary_y=None):
+        """
+        Select images from a particular subplot cell and/or images
+        that satisfy custom selection criteria.
+
+        Parameters
+        ----------
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Annotations will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all images are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of images to select.
+            To select images by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            image that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all images are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select images associated with the secondary
+              y-axis of the subplot.
+            * If False, only select images associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter images based on secondary
+              y-axis.
+
+            To select images by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        generator
+            Generator that iterates through all of the images that satisfy
+            all of the specified selection criteria
+        """
+        return self._select_annotations_like(
+            "images", selector=selector, row=row, col=col, secondary_y=secondary_y
+        )
+
+    def for_each_layout_image(
+        self, fn, selector=None, row=None, col=None, secondary_y=None
+    ):
+        """
+        Apply a function to all images that satisfy the specified selection
+        criteria
+
+        Parameters
+        ----------
+        fn:
+            Function that inputs a single image object.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all images are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of images to select.
+            To select images by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            images that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all images are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select images associated with the secondary
+              y-axis of the subplot.
+            * If False, only select images associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter images based on secondary
+              y-axis.
+
+            To select images by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="images", selector=selector, row=row, col=col, secondary_y=secondary_y,
+        ):
+            fn(obj)
+
+        return self
+
+    def update_layout_images(
+        self, patch, selector=None, row=None, col=None, secondary_y=None, **kwargs
+    ):
+        """
+        Perform a property update operation on all images that satisfy the
+        specified selection criteria
+
+        Parameters
+        ----------
+        patch: dict or None (default None)
+            Dictionary of property updates to be applied to all images that
+            satisfy the selection criteria.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all images are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of images to select.
+            To select images by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            image that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all images are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select images associated with the secondary
+              y-axis of the subplot.
+            * If False, only select images associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter images based on secondary
+              y-axis.
+
+            To select images by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        **kwargs
+            Additional property updates to apply to each selected image. If
+            a property is specified in both patch and in **kwargs then the
+            one in **kwargs takes precedence.
+
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="images", selector=selector, row=row, col=col, secondary_y=secondary_y,
+        ):
+            obj.update(patch, **kwargs)
+
+        return self
+
+    def add_layout_image(
+        self,
+        arg=None,
+        layer=None,
+        name=None,
+        opacity=None,
+        sizex=None,
+        sizey=None,
+        sizing=None,
+        source=None,
+        templateitemname=None,
+        visible=None,
+        x=None,
+        xanchor=None,
+        xref=None,
+        y=None,
+        yanchor=None,
+        yref=None,
+        row=None,
+        col=None,
+        secondary_y=None,
+        **kwargs
+    ):
+        """
+        Create and add a new image to the figure's layout
+        
+        Parameters
+        ----------
+        arg
+            instance of Image or dict with compatible properties
+        layer
+            Specifies whether images are drawn below or above
+            traces. When `xref` and `yref` are both set to `paper`,
+            image is drawn below the entire plot area.
+        name
+            When used in a template, named items are created in the
+            output figure in addition to any items the figure
+            already has in this array. You can modify these items
+            in the output figure by making your own item with
+            `templateitemname` matching this `name` alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). Has no effect outside of a
+            template.
+        opacity
+            Sets the opacity of the image.
+        sizex
+            Sets the image container size horizontally. The image
+            will be sized based on the `position` value. When
+            `xref` is set to `paper`, units are sized relative to
+            the plot width.
+        sizey
+            Sets the image container size vertically. The image
+            will be sized based on the `position` value. When
+            `yref` is set to `paper`, units are sized relative to
+            the plot height.
+        sizing
+            Specifies which dimension of the image to constrain.
+        source
+            Specifies the URL of the image to be used. The URL must
+            be accessible from the domain where the plot code is
+            run, and can be either relative or absolute.
+        templateitemname
+            Used to refer to a named item in this array in the
+            template. Named items from the template will be created
+            even without a matching item in the input figure, but
+            you can modify one by making an item with
+            `templateitemname` matching its `name`, alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). If there is no template or no
+            matching item, this item will be hidden unless you
+            explicitly show it with `visible: true`.
+        visible
+            Determines whether or not this image is visible.
+        x
+            Sets the image's x position. When `xref` is set to
+            `paper`, units are sized relative to the plot height.
+            See `xref` for more info
+        xanchor
+            Sets the anchor for the x position
+        xref
+            Sets the images's x coordinate axis. If set to a x axis
+            id (e.g. "x" or "x2"), the `x` position refers to an x
+            data coordinate If set to "paper", the `x` position
+            refers to the distance from the left of plot in
+            normalized coordinates where 0 (1) corresponds to the
+            left (right).
+        y
+            Sets the image's y position. When `yref` is set to
+            `paper`, units are sized relative to the plot height.
+            See `yref` for more info
+        yanchor
+            Sets the anchor for the y position.
+        yref
+            Sets the images's y coordinate axis. If set to a y axis
+            id (e.g. "y" or "y2"), the `y` position refers to a y
+            data coordinate. If set to "paper", the `y` position
+            refers to the distance from the bottom of the plot in
+            normalized coordinates where 0 (1) corresponds to the
+            bottom (top).
+        row
+            Subplot row for image
+        col
+            Subplot column for image
+        secondary_y
+            Whether to add image to secondary y-axis
+
+        Returns
+        -------
+        Figure
+        """
+        new_obj = _layout.Image(
+            arg,
+            layer=layer,
+            name=name,
+            opacity=opacity,
+            sizex=sizex,
+            sizey=sizey,
+            sizing=sizing,
+            source=source,
+            templateitemname=templateitemname,
+            visible=visible,
+            x=x,
+            xanchor=xanchor,
+            xref=xref,
+            y=y,
+            yanchor=yanchor,
+            yref=yref,
+            **kwargs
+        )
+        return self._add_annotation_like(
+            "image", "images", new_obj, row=row, col=col, secondary_y=secondary_y,
+        )
+
+    def select_shapes(self, selector=None, row=None, col=None, secondary_y=None):
+        """
+        Select shapes from a particular subplot cell and/or shapes
+        that satisfy custom selection criteria.
+
+        Parameters
+        ----------
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Annotations will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all shapes are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of shapes to select.
+            To select shapes by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            shape that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all shapes are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select shapes associated with the secondary
+              y-axis of the subplot.
+            * If False, only select shapes associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter shapes based on secondary
+              y-axis.
+
+            To select shapes by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        generator
+            Generator that iterates through all of the shapes that satisfy
+            all of the specified selection criteria
+        """
+        return self._select_annotations_like(
+            "shapes", selector=selector, row=row, col=col, secondary_y=secondary_y
+        )
+
+    def for_each_shape(self, fn, selector=None, row=None, col=None, secondary_y=None):
+        """
+        Apply a function to all shapes that satisfy the specified selection
+        criteria
+
+        Parameters
+        ----------
+        fn:
+            Function that inputs a single shape object.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all shapes are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of shapes to select.
+            To select shapes by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            shapes that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all shapes are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select shapes associated with the secondary
+              y-axis of the subplot.
+            * If False, only select shapes associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter shapes based on secondary
+              y-axis.
+
+            To select shapes by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="shapes", selector=selector, row=row, col=col, secondary_y=secondary_y,
+        ):
+            fn(obj)
+
+        return self
+
+    def update_shapes(
+        self, patch, selector=None, row=None, col=None, secondary_y=None, **kwargs
+    ):
+        """
+        Perform a property update operation on all shapes that satisfy the
+        specified selection criteria
+
+        Parameters
+        ----------
+        patch: dict or None (default None)
+            Dictionary of property updates to be applied to all shapes that
+            satisfy the selection criteria.
+        selector: dict or None (default None)
+            Dict to use as selection criteria.
+            Traces will be selected if they contain properties corresponding
+            to all of the dictionary's keys, with values that exactly match
+            the supplied values. If None (the default), all shapes are
+            selected.
+        row, col: int or None (default None)
+            Subplot row and column index of shapes to select.
+            To select shapes by row and column, the Figure must have been
+            created using plotly.subplots.make_subplots.  To select only those
+            shape that are in paper coordinates, set row and col to the
+            string 'paper'.  If None (the default), all shapes are selected.
+        secondary_y: boolean or None (default None)
+            * If True, only select shapes associated with the secondary
+              y-axis of the subplot.
+            * If False, only select shapes associated with the primary
+              y-axis of the subplot.
+            * If None (the default), do not filter shapes based on secondary
+              y-axis.
+
+            To select shapes by secondary y-axis, the Figure must have been
+            created using plotly.subplots.make_subplots. See the docstring
+            for the specs argument to make_subplots for more info on
+            creating subplots with secondary y-axes.
+        **kwargs
+            Additional property updates to apply to each selected shape. If
+            a property is specified in both patch and in **kwargs then the
+            one in **kwargs takes precedence.
+
+        Returns
+        -------
+        self
+            Returns the Figure object that the method was called on
+        """
+        for obj in self._select_annotations_like(
+            prop="shapes", selector=selector, row=row, col=col, secondary_y=secondary_y,
+        ):
+            obj.update(patch, **kwargs)
+
+        return self
+
+    def add_shape(
+        self,
+        arg=None,
+        fillcolor=None,
+        layer=None,
+        line=None,
+        name=None,
+        opacity=None,
+        path=None,
+        templateitemname=None,
+        type=None,
+        visible=None,
+        x0=None,
+        x1=None,
+        xanchor=None,
+        xref=None,
+        xsizemode=None,
+        y0=None,
+        y1=None,
+        yanchor=None,
+        yref=None,
+        ysizemode=None,
+        row=None,
+        col=None,
+        secondary_y=None,
+        **kwargs
+    ):
+        """
+        Create and add a new shape to the figure's layout
+        
+        Parameters
+        ----------
+        arg
+            instance of Shape or dict with compatible properties
+        fillcolor
+            Sets the color filling the shape's interior.
+        layer
+            Specifies whether shapes are drawn below or above
+            traces.
+        line
+            plotly.graph_objects.layout.shape.Line instance or dict
+            with compatible properties
+        name
+            When used in a template, named items are created in the
+            output figure in addition to any items the figure
+            already has in this array. You can modify these items
+            in the output figure by making your own item with
+            `templateitemname` matching this `name` alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). Has no effect outside of a
+            template.
+        opacity
+            Sets the opacity of the shape.
+        path
+            For `type` "path" - a valid SVG path with the pixel
+            values replaced by data values in
+            `xsizemode`/`ysizemode` being "scaled" and taken
+            unmodified as pixels relative to `xanchor` and
+            `yanchor` in case of "pixel" size mode. There are a few
+            restrictions / quirks only absolute instructions, not
+            relative. So the allowed segments are: M, L, H, V, Q,
+            C, T, S, and Z arcs (A) are not allowed because radius
+            rx and ry are relative. In the future we could consider
+            supporting relative commands, but we would have to
+            decide on how to handle date and log axes. Note that
+            even as is, Q and C Bezier paths that are smooth on
+            linear axes may not be smooth on log, and vice versa.
+            no chained "polybezier" commands - specify the segment
+            type for each one. On category axes, values are numbers
+            scaled to the serial numbers of categories because
+            using the categories themselves there would be no way
+            to describe fractional positions On data axes: because
+            space and T are both normal components of path strings,
+            we can't use either to separate date from time parts.
+            Therefore we'll use underscore for this purpose:
+            2015-02-21_13:45:56.789
+        templateitemname
+            Used to refer to a named item in this array in the
+            template. Named items from the template will be created
+            even without a matching item in the input figure, but
+            you can modify one by making an item with
+            `templateitemname` matching its `name`, alongside your
+            modifications (including `visible: false` or `enabled:
+            false` to hide it). If there is no template or no
+            matching item, this item will be hidden unless you
+            explicitly show it with `visible: true`.
+        type
+            Specifies the shape type to be drawn. If "line", a line
+            is drawn from (`x0`,`y0`) to (`x1`,`y1`) with respect
+            to the axes' sizing mode. If "circle", a circle is
+            drawn from ((`x0`+`x1`)/2, (`y0`+`y1`)/2)) with radius
+            (|(`x0`+`x1`)/2 - `x0`|, |(`y0`+`y1`)/2 -`y0`)|) with
+            respect to the axes' sizing mode. If "rect", a
+            rectangle is drawn linking (`x0`,`y0`), (`x1`,`y0`),
+            (`x1`,`y1`), (`x0`,`y1`), (`x0`,`y0`) with respect to
+            the axes' sizing mode. If "path", draw a custom SVG
+            path using `path`. with respect to the axes' sizing
+            mode.
+        visible
+            Determines whether or not this shape is visible.
+        x0
+            Sets the shape's starting x position. See `type` and
+            `xsizemode` for more info.
+        x1
+            Sets the shape's end x position. See `type` and
+            `xsizemode` for more info.
+        xanchor
+            Only relevant in conjunction with `xsizemode` set to
+            "pixel". Specifies the anchor point on the x axis to
+            which `x0`, `x1` and x coordinates within `path` are
+            relative to. E.g. useful to attach a pixel sized shape
+            to a certain data value. No effect when `xsizemode` not
+            set to "pixel".
+        xref
+            Sets the shape's x coordinate axis. If set to an x axis
+            id (e.g. "x" or "x2"), the `x` position refers to an x
+            coordinate. If set to "paper", the `x` position refers
+            to the distance from the left side of the plotting area
+            in normalized coordinates where 0 (1) corresponds to
+            the left (right) side. If the axis `type` is "log",
+            then you must take the log of your desired range. If
+            the axis `type` is "date", then you must convert the
+            date to unix time in milliseconds.
+        xsizemode
+            Sets the shapes's sizing mode along the x axis. If set
+            to "scaled", `x0`, `x1` and x coordinates within `path`
+            refer to data values on the x axis or a fraction of the
+            plot area's width (`xref` set to "paper"). If set to
+            "pixel", `xanchor` specifies the x position in terms of
+            data or plot fraction but `x0`, `x1` and x coordinates
+            within `path` are pixels relative to `xanchor`. This
+            way, the shape can have a fixed width while maintaining
+            a position relative to data or plot fraction.
+        y0
+            Sets the shape's starting y position. See `type` and
+            `ysizemode` for more info.
+        y1
+            Sets the shape's end y position. See `type` and
+            `ysizemode` for more info.
+        yanchor
+            Only relevant in conjunction with `ysizemode` set to
+            "pixel". Specifies the anchor point on the y axis to
+            which `y0`, `y1` and y coordinates within `path` are
+            relative to. E.g. useful to attach a pixel sized shape
+            to a certain data value. No effect when `ysizemode` not
+            set to "pixel".
+        yref
+            Sets the annotation's y coordinate axis. If set to an y
+            axis id (e.g. "y" or "y2"), the `y` position refers to
+            an y coordinate If set to "paper", the `y` position
+            refers to the distance from the bottom of the plotting
+            area in normalized coordinates where 0 (1) corresponds
+            to the bottom (top).
+        ysizemode
+            Sets the shapes's sizing mode along the y axis. If set
+            to "scaled", `y0`, `y1` and y coordinates within `path`
+            refer to data values on the y axis or a fraction of the
+            plot area's height (`yref` set to "paper"). If set to
+            "pixel", `yanchor` specifies the y position in terms of
+            data or plot fraction but `y0`, `y1` and y coordinates
+            within `path` are pixels relative to `yanchor`. This
+            way, the shape can have a fixed height while
+            maintaining a position relative to data or plot
+            fraction.
+        row
+            Subplot row for shape
+        col
+            Subplot column for shape
+        secondary_y
+            Whether to add shape to secondary y-axis
+
+        Returns
+        -------
+        Figure
+        """
+        new_obj = _layout.Shape(
+            arg,
+            fillcolor=fillcolor,
+            layer=layer,
+            line=line,
+            name=name,
+            opacity=opacity,
+            path=path,
+            templateitemname=templateitemname,
+            type=type,
+            visible=visible,
+            x0=x0,
+            x1=x1,
+            xanchor=xanchor,
+            xref=xref,
+            xsizemode=xsizemode,
+            y0=y0,
+            y1=y1,
+            yanchor=yanchor,
+            yref=yref,
+            ysizemode=ysizemode,
+            **kwargs
+        )
+        return self._add_annotation_like(
+            "shape", "shapes", new_obj, row=row, col=col, secondary_y=secondary_y,
+        )

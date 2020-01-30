@@ -63,7 +63,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -98,6 +97,37 @@ class TitleValidator(_plotly_utils.basevalidators.TitleValidator):
                 itself. This behavior has been deprecated.
 """,
             ),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TexttemplatesrcValidator(_plotly_utils.basevalidators.SrcValidator):
+    def __init__(
+        self, plotly_name="texttemplatesrc", parent_name="funnelarea", **kwargs
+    ):
+        super(TexttemplatesrcValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "none"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TexttemplateValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="texttemplate", parent_name="funnelarea", **kwargs):
+        super(TexttemplateValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            array_ok=kwargs.pop("array_ok", True),
+            edit_type=kwargs.pop("edit_type", "plot"),
+            role=kwargs.pop("role", "info"),
             **kwargs
         )
 
@@ -219,7 +249,7 @@ class TextValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(TextValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            edit_type=kwargs.pop("edit_type", "calc"),
+            edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "data"),
             **kwargs
         )
@@ -494,7 +524,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs

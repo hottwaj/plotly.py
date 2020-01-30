@@ -7,19 +7,19 @@ mostly meant to be passed in as the `color_discrete_sequence` argument to variou
 from ._swatches import _swatches
 
 
-def swatches():
-    return _swatches(__name__, globals())
+def swatches(template=None):
+    return _swatches(__name__, globals(), template)
 
 
 swatches.__doc__ = _swatches.__doc__
 
 Plotly = [
-    "#636efa",
+    "#636EFA",
     "#EF553B",
-    "#00cc96",
-    "#ab63fa",
+    "#00CC96",
+    "#AB63FA",
     "#FFA15A",
-    "#19d3f3",
+    "#19D3F3",
     "#FF6692",
     "#B6E880",
     "#FF97FF",
@@ -27,40 +27,40 @@ Plotly = [
 ]
 
 D3 = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#7f7f7f",
-    "#bcbd22",
-    "#17becf",
+    "#1F77B4",
+    "#FF7F0E",
+    "#2CA02C",
+    "#D62728",
+    "#9467BD",
+    "#8C564B",
+    "#E377C2",
+    "#7F7F7F",
+    "#BCBD22",
+    "#17BECF",
 ]
 G10 = [
-    "#3366cc",
-    "#dc3912",
-    "#ff9900",
+    "#3366CC",
+    "#DC3912",
+    "#FF9900",
     "#109618",
     "#990099",
-    "#0099c6",
-    "#dd4477",
-    "#66aa00",
-    "#b82e2e",
+    "#0099C6",
+    "#DD4477",
+    "#66AA00",
+    "#B82E2E",
     "#316395",
 ]
 T10 = [
-    "#4c78a8",
-    "#f58518",
-    "#e45756",
-    "#72b7b2",
-    "#54a24b",
-    "#eeca3b",
-    "#b279a2",
-    "#ff9da6",
-    "#9d755d",
-    "#bab0ac",
+    "#4C78A8",
+    "#F58518",
+    "#E45756",
+    "#72B7B2",
+    "#54A24B",
+    "#EECA3B",
+    "#B279A2",
+    "#FF9DA6",
+    "#9D755D",
+    "#BAB0AC",
 ]
 Alphabet = [
     "#AA0DFE",
@@ -145,3 +145,10 @@ Light24 = [
 
 from .colorbrewer import Set1, Pastel1, Dark2, Set2, Pastel2, Set3  # noqa: F401
 from .carto import Antique, Bold, Pastel, Prism, Safe, Vivid  # noqa: F401
+
+# Prefix variable names with _ so that they will not be added to the swatches
+_contents = dict(globals())
+for _k, _cols in _contents.items():
+    if _k.startswith("_") or _k == "swatches" or _k.endswith("_r"):
+        continue
+    globals()[_k + "_r"] = _cols[::-1]

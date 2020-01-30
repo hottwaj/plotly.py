@@ -711,12 +711,13 @@ class Line(_BaseTraceHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -828,7 +829,7 @@ class Line(_BaseTraceHierarchyType):
         containing arrays mapping a normalized value to an rgb, rgba,
         hex, hsl, hsv, or named color string. At minimum, a mapping for
         the lowest (0) and highest (1) values are required. For
-        example, `[[0, 'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To
+        example, `[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`. To
         control the bounds of the colorscale in color space,
         use`line.cmin` and `line.cmax`. Alternatively, `colorscale` may
         be a palette name string of the following list: Greys,YlGnBu,Gr
@@ -858,7 +859,8 @@ class Line(_BaseTraceHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -899,11 +901,16 @@ class Line(_BaseTraceHierarchyType):
         on hover box. Note that this will override `hoverinfo`.
         Variables are inserted using %{variable}, for example "y:
         %{y}". Numbers are formatted using d3-format's syntax
-        %{variable:d3-format}, for example "Price: %{y:$.2f}". See http
-        s://github.com/d3/d3-format/blob/master/README.md#locale_format
-        for details on the formatting syntax. The variables available
-        in `hovertemplate` are the ones emitted as event data described
-        at this link https://plot.ly/javascript/plotlyjs-events/#event-
+        %{variable:d3-format}, for example "Price: %{y:$.2f}".
+        https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format for details on
+        the formatting syntax. Dates are formatted using d3-time-
+        format's syntax %{variable|d3-time-format}, for example "Day:
+        %{2019-01-01|%A}". https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format for details on
+        the date formatting syntax. The variables available in
+        `hovertemplate` are the ones emitted as event data described at
+        this link https://plot.ly/javascript/plotlyjs-events/#event-
         data. Additionally, every attributes that can be specified per-
         point (the ones that are `arrayOk: true`) are available.
         variables `count` and `probability`. Anything contained in tag
@@ -1060,7 +1067,7 @@ class Line(_BaseTraceHierarchyType):
             value to an rgb, rgba, hex, hsl, hsv, or named color
             string. At minimum, a mapping for the lowest (0) and
             highest (1) values are required. For example, `[[0,
-            'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To control the
+            'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`. To control the
             bounds of the colorscale in color space, use`line.cmin`
             and `line.cmax`. Alternatively, `colorscale` may be a
             palette name string of the following list: Greys,YlGnBu
@@ -1075,11 +1082,16 @@ class Line(_BaseTraceHierarchyType):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -1187,7 +1199,7 @@ class Line(_BaseTraceHierarchyType):
             value to an rgb, rgba, hex, hsl, hsv, or named color
             string. At minimum, a mapping for the lowest (0) and
             highest (1) values are required. For example, `[[0,
-            'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To control the
+            'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`. To control the
             bounds of the colorscale in color space, use`line.cmin`
             and `line.cmax`. Alternatively, `colorscale` may be a
             palette name string of the following list: Greys,YlGnBu
@@ -1202,11 +1214,16 @@ class Line(_BaseTraceHierarchyType):
             `hoverinfo`. Variables are inserted using %{variable},
             for example "y: %{y}". Numbers are formatted using
             d3-format's syntax %{variable:d3-format}, for example
-            "Price: %{y:$.2f}". See https://github.com/d3/d3-format
-            /blob/master/README.md#locale_format for details on the
-            formatting syntax. The variables available in
-            `hovertemplate` are the ones emitted as event data
-            described at this link
+            "Price: %{y:$.2f}". https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format for
+            details on the formatting syntax. Dates are formatted
+            using d3-time-format's syntax %{variable|d3-time-
+            format}, for example "Day: %{2019-01-01|%A}".
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format for
+            details on the date formatting syntax. The variables
+            available in `hovertemplate` are the ones emitted as
+            event data described at this link
             https://plot.ly/javascript/plotlyjs-events/#event-data.
             Additionally, every attributes that can be specified
             per-point (the ones that are `arrayOk: true`) are
@@ -2178,5 +2195,16 @@ an instance of plotly.graph_objs.parcats.Dimension"""
         # ------------------
         self._skip_invalid = False
 
+
+__all__ = [
+    "Dimension",
+    "Dimension",
+    "Domain",
+    "Labelfont",
+    "Line",
+    "Stream",
+    "Tickfont",
+    "line",
+]
 
 from plotly.graph_objs.parcats import line

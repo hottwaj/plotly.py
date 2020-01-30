@@ -570,11 +570,11 @@ class YAxis(_BaseLayoutHierarchyType):
         """
         Sets the hover text formatting rule using d3 formatting mini-
         languages which are very similar to those in Python. For
-        numbers, see: https://github.com/d3/d3-format/blob/master/READM
-        E.md#locale_format And for dates see:
-        https://github.com/d3/d3-time-
-        format/blob/master/README.md#locale_format We add one item to
-        d3's date formatter: "%{n}f" for fractional seconds with n
+        numbers, see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format And for dates
+        see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format We add one item
+        to d3's date formatter: "%{n}f" for fractional seconds with n
         digits. For example, *2016-10-13 09:15:23.456* with tickformat
         "%H~%M~%S.%2f" would display "09~15~23.46"
     
@@ -1470,11 +1470,11 @@ class YAxis(_BaseLayoutHierarchyType):
         """
         Sets the tick label formatting rule using d3 formatting mini-
         languages which are very similar to those in Python. For
-        numbers, see: https://github.com/d3/d3-format/blob/master/READM
-        E.md#locale_format And for dates see:
-        https://github.com/d3/d3-time-
-        format/blob/master/README.md#locale_format We add one item to
-        d3's date formatter: "%{n}f" for fractional seconds with n
+        numbers, see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format And for dates
+        see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format We add one item
+        to d3's date formatter: "%{n}f" for fractional seconds with n
         digits. For example, *2016-10-13 09:15:23.456* with tickformat
         "%H~%M~%S.%2f" would display "09~15~23.46"
     
@@ -1834,6 +1834,18 @@ class YAxis(_BaseLayoutHierarchyType):
                     Sets this axis' title font. Note that the
                     title's font used to be customized by the now
                     deprecated `titlefont` attribute.
+                standoff
+                    Sets the standoff distance (in px) between the
+                    axis labels and the title text The default
+                    value is a function of the axis tick labels,
+                    the title `font.size` and the axis `linewidth`.
+                    Note that the axis title position is always
+                    constrained within the margins, so the actual
+                    standoff distance is always less than the set
+                    or default value. By setting `standoff` and
+                    turning on `automargin`, plotly.js will push
+                    the margins to fit the axis title at given
+                    standoff distance.
                 text
                     Sets the title of this axis. Note that before
                     the existence of `title.text`, the title's
@@ -2184,11 +2196,12 @@ class YAxis(_BaseLayoutHierarchyType):
         hoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -2360,11 +2373,12 @@ class YAxis(_BaseLayoutHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -2641,11 +2655,12 @@ class YAxis(_BaseLayoutHierarchyType):
         hoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -2817,11 +2832,12 @@ class YAxis(_BaseLayoutHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -3743,11 +3759,11 @@ class XAxis(_BaseLayoutHierarchyType):
         """
         Sets the hover text formatting rule using d3 formatting mini-
         languages which are very similar to those in Python. For
-        numbers, see: https://github.com/d3/d3-format/blob/master/READM
-        E.md#locale_format And for dates see:
-        https://github.com/d3/d3-time-
-        format/blob/master/README.md#locale_format We add one item to
-        d3's date formatter: "%{n}f" for fractional seconds with n
+        numbers, see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format And for dates
+        see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format We add one item
+        to d3's date formatter: "%{n}f" for fractional seconds with n
         digits. For example, *2016-10-13 09:15:23.456* with tickformat
         "%H~%M~%S.%2f" would display "09~15~23.46"
     
@@ -4770,11 +4786,11 @@ class XAxis(_BaseLayoutHierarchyType):
         """
         Sets the tick label formatting rule using d3 formatting mini-
         languages which are very similar to those in Python. For
-        numbers, see: https://github.com/d3/d3-format/blob/master/READM
-        E.md#locale_format And for dates see:
-        https://github.com/d3/d3-time-
-        format/blob/master/README.md#locale_format We add one item to
-        d3's date formatter: "%{n}f" for fractional seconds with n
+        numbers, see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Formatting.md#d3_format And for dates
+        see: https://github.com/d3/d3-3.x-api-
+        reference/blob/master/Time-Formatting.md#format We add one item
+        to d3's date formatter: "%{n}f" for fractional seconds with n
         digits. For example, *2016-10-13 09:15:23.456* with tickformat
         "%H~%M~%S.%2f" would display "09~15~23.46"
     
@@ -5134,6 +5150,18 @@ class XAxis(_BaseLayoutHierarchyType):
                     Sets this axis' title font. Note that the
                     title's font used to be customized by the now
                     deprecated `titlefont` attribute.
+                standoff
+                    Sets the standoff distance (in px) between the
+                    axis labels and the title text The default
+                    value is a function of the axis tick labels,
+                    the title `font.size` and the axis `linewidth`.
+                    Note that the axis title position is always
+                    constrained within the margins, so the actual
+                    standoff distance is always less than the set
+                    or default value. By setting `standoff` and
+                    turning on `automargin`, plotly.js will push
+                    the margins to fit the axis title at given
+                    standoff distance.
                 text
                     Sets the title of this axis. Note that before
                     the existence of `title.text`, the title's
@@ -5484,11 +5512,12 @@ class XAxis(_BaseLayoutHierarchyType):
         hoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -5666,11 +5695,12 @@ class XAxis(_BaseLayoutHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -5949,11 +5979,12 @@ class XAxis(_BaseLayoutHierarchyType):
         hoverformat
             Sets the hover text formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -6131,11 +6162,12 @@ class XAxis(_BaseLayoutHierarchyType):
         tickformat
             Sets the tick label formatting rule using d3 formatting
             mini-languages which are very similar to those in
-            Python. For numbers, see: https://github.com/d3/d3-form
-            at/blob/master/README.md#locale_format And for dates
-            see: https://github.com/d3/d3-time-
-            format/blob/master/README.md#locale_format We add one
-            item to d3's date formatter: "%{n}f" for fractional
+            Python. For numbers, see:
+            https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Formatting.md#d3_format And for
+            dates see: https://github.com/d3/d3-3.x-api-
+            reference/blob/master/Time-Formatting.md#format We add
+            one item to d3's date formatter: "%{n}f" for fractional
             seconds with n digits. For example, *2016-10-13
             09:15:23.456* with tickformat "%H~%M~%S.%2f" would
             display "09~15~23.46"
@@ -6673,6 +6705,12 @@ class Updatemenu(_BaseLayoutHierarchyType):
                 args
                     Sets the arguments values to be passed to the
                     Plotly method set in `method` on click.
+                args2
+                    Sets a 2nd set of `args`, these arguments
+                    values are passed to the Plotly method set in
+                    `method` when clicking this button while in the
+                    active state. Use this to create toggle
+                    buttons.
                 execute
                     When true, the API method is executed. When
                     false, all other behaviors are the same and
@@ -7347,6 +7385,158 @@ an instance of plotly.graph_objs.layout.Updatemenu"""
         self["y"] = y if y is not None else _v
         _v = arg.pop("yanchor", None)
         self["yanchor"] = yanchor if yanchor is not None else _v
+
+        # Process unknown kwargs
+        # ----------------------
+        self._process_kwargs(**dict(arg, **kwargs))
+
+        # Reset skip_invalid
+        # ------------------
+        self._skip_invalid = False
+
+
+from plotly.basedatatypes import BaseLayoutHierarchyType as _BaseLayoutHierarchyType
+import copy as _copy
+
+
+class Uniformtext(_BaseLayoutHierarchyType):
+
+    # minsize
+    # -------
+    @property
+    def minsize(self):
+        """
+        Sets the minimum text size between traces of the same type.
+    
+        The 'minsize' property is a number and may be specified as:
+          - An int or float in the interval [0, inf]
+
+        Returns
+        -------
+        int|float
+        """
+        return self["minsize"]
+
+    @minsize.setter
+    def minsize(self, val):
+        self["minsize"] = val
+
+    # mode
+    # ----
+    @property
+    def mode(self):
+        """
+        Determines how the font size for various text elements are
+        uniformed between each trace type. If the computed text sizes
+        were smaller than the minimum size defined by
+        `uniformtext.minsize` using "hide" option hides the text; and
+        using "show" option shows the text without further downscaling.
+        Please note that if the size defined by `minsize` is greater
+        than the font size defined by trace, then the `minsize` is
+        used.
+    
+        The 'mode' property is an enumeration that may be specified as:
+          - One of the following enumeration values:
+                [False, 'hide', 'show']
+
+        Returns
+        -------
+        Any
+        """
+        return self["mode"]
+
+    @mode.setter
+    def mode(self, val):
+        self["mode"] = val
+
+    # property parent name
+    # --------------------
+    @property
+    def _parent_path_str(self):
+        return "layout"
+
+    # Self properties description
+    # ---------------------------
+    @property
+    def _prop_descriptions(self):
+        return """\
+        minsize
+            Sets the minimum text size between traces of the same
+            type.
+        mode
+            Determines how the font size for various text elements
+            are uniformed between each trace type. If the computed
+            text sizes were smaller than the minimum size defined
+            by `uniformtext.minsize` using "hide" option hides the
+            text; and using "show" option shows the text without
+            further downscaling. Please note that if the size
+            defined by `minsize` is greater than the font size
+            defined by trace, then the `minsize` is used.
+        """
+
+    def __init__(self, arg=None, minsize=None, mode=None, **kwargs):
+        """
+        Construct a new Uniformtext object
+        
+        Parameters
+        ----------
+        arg
+            dict of properties compatible with this constructor or
+            an instance of plotly.graph_objs.layout.Uniformtext
+        minsize
+            Sets the minimum text size between traces of the same
+            type.
+        mode
+            Determines how the font size for various text elements
+            are uniformed between each trace type. If the computed
+            text sizes were smaller than the minimum size defined
+            by `uniformtext.minsize` using "hide" option hides the
+            text; and using "show" option shows the text without
+            further downscaling. Please note that if the size
+            defined by `minsize` is greater than the font size
+            defined by trace, then the `minsize` is used.
+
+        Returns
+        -------
+        Uniformtext
+        """
+        super(Uniformtext, self).__init__("uniformtext")
+
+        # Validate arg
+        # ------------
+        if arg is None:
+            arg = {}
+        elif isinstance(arg, self.__class__):
+            arg = arg.to_plotly_json()
+        elif isinstance(arg, dict):
+            arg = _copy.copy(arg)
+        else:
+            raise ValueError(
+                """\
+The first argument to the plotly.graph_objs.layout.Uniformtext 
+constructor must be a dict or 
+an instance of plotly.graph_objs.layout.Uniformtext"""
+            )
+
+        # Handle skip_invalid
+        # -------------------
+        self._skip_invalid = kwargs.pop("skip_invalid", False)
+
+        # Import validators
+        # -----------------
+        from plotly.validators.layout import uniformtext as v_uniformtext
+
+        # Initialize validators
+        # ---------------------
+        self._validators["minsize"] = v_uniformtext.MinsizeValidator()
+        self._validators["mode"] = v_uniformtext.ModeValidator()
+
+        # Populate data dict with properties
+        # ----------------------------------
+        _v = arg.pop("minsize", None)
+        self["minsize"] = minsize if minsize is not None else _v
+        _v = arg.pop("mode", None)
+        self["mode"] = mode if mode is not None else _v
 
         # Process unknown kwargs
         # ----------------------
@@ -8062,12 +8252,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8145,12 +8336,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8289,12 +8481,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8372,12 +8565,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8575,12 +8769,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8658,12 +8853,13 @@ class Ternary(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -8999,6 +9195,10 @@ class Template(_BaseLayoutHierarchyType):
                 carpet
                     A tuple of plotly.graph_objects.Carpet
                     instances or dicts with compatible properties
+                choroplethmapbox
+                    A tuple of
+                    plotly.graph_objects.Choroplethmapbox instances
+                    or dicts with compatible properties
                 choropleth
                     A tuple of plotly.graph_objects.Choropleth
                     instances or dicts with compatible properties
@@ -9010,6 +9210,9 @@ class Template(_BaseLayoutHierarchyType):
                     instances or dicts with compatible properties
                 contour
                     A tuple of plotly.graph_objects.Contour
+                    instances or dicts with compatible properties
+                densitymapbox
+                    A tuple of plotly.graph_objects.Densitymapbox
                     instances or dicts with compatible properties
                 funnelarea
                     A tuple of plotly.graph_objects.Funnelarea
@@ -9032,6 +9235,12 @@ class Template(_BaseLayoutHierarchyType):
                     instances or dicts with compatible properties
                 histogram
                     A tuple of plotly.graph_objects.Histogram
+                    instances or dicts with compatible properties
+                image
+                    A tuple of plotly.graph_objects.Image instances
+                    or dicts with compatible properties
+                indicator
+                    A tuple of plotly.graph_objects.Indicator
                     instances or dicts with compatible properties
                 isosurface
                     A tuple of plotly.graph_objects.Isosurface
@@ -9099,6 +9308,9 @@ class Template(_BaseLayoutHierarchyType):
                 table
                     A tuple of plotly.graph_objects.Table instances
                     or dicts with compatible properties
+                treemap
+                    A tuple of plotly.graph_objects.Treemap
+                    instances or dicts with compatible properties
                 violin
                     A tuple of plotly.graph_objects.Violin
                     instances or dicts with compatible properties
@@ -11913,12 +12125,13 @@ class Scene(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -12026,12 +12239,13 @@ class Scene(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -12223,12 +12437,13 @@ class Scene(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -12336,12 +12551,13 @@ class Scene(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -12533,12 +12749,13 @@ class Scene(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -12646,12 +12863,13 @@ class Scene(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -13553,12 +13771,13 @@ class Polar(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -13647,12 +13866,13 @@ class Polar(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -14028,12 +14248,13 @@ class Polar(_BaseLayoutHierarchyType):
                 hoverformat
                     Sets the hover text formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -14128,12 +14349,13 @@ class Polar(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -14825,6 +15047,10 @@ class Margin(_BaseLayoutHierarchyType):
     @property
     def autoexpand(self):
         """
+        Turns on/off margin expansion computations. Legends, colorbars,
+        updatemenus, sliders, axis rangeselector and rangeslider are
+        allowed to push the margins by defaults.
+    
         The 'autoexpand' property must be specified as a bool
         (either True, or False)
 
@@ -14951,7 +15177,10 @@ class Margin(_BaseLayoutHierarchyType):
     def _prop_descriptions(self):
         return """\
         autoexpand
-
+            Turns on/off margin expansion computations. Legends,
+            colorbars, updatemenus, sliders, axis rangeselector and
+            rangeslider are allowed to push the margins by
+            defaults.
         b
             Sets the bottom margin (in px).
         l
@@ -14985,7 +15214,10 @@ class Margin(_BaseLayoutHierarchyType):
             dict of properties compatible with this constructor or
             an instance of plotly.graph_objs.layout.Margin
         autoexpand
-
+            Turns on/off margin expansion computations. Legends,
+            colorbars, updatemenus, sliders, axis rangeselector and
+            rangeslider are allowed to push the margins by
+            defaults.
         b
             Sets the bottom margin (in px).
         l
@@ -15074,7 +15306,10 @@ class Mapbox(_BaseLayoutHierarchyType):
         """
         Sets the mapbox access token to be used for this mapbox map.
         Alternatively, the mapbox access token can be set in the
-        configuration options under `mapboxAccessToken`.
+        configuration options under `mapboxAccessToken`. Note that
+        accessToken are only required when `style` (e.g with values :
+        basic, streets, outdoors, light, dark, satellite, satellite-
+        streets ) and/or a layout layer references the Mapbox server.
     
         The 'accesstoken' property is a string and must be specified as:
           - A non-empty string
@@ -15208,6 +15443,12 @@ class Mapbox(_BaseLayoutHierarchyType):
                     (mapbox.layer.paint.fill-color) If `type` is
                     "symbol", color corresponds to the icon color
                     (mapbox.layer.paint.icon-color)
+                coordinates
+                    Sets the coordinates array contains [longitude,
+                    latitude] pairs for the image corners listed in
+                    clockwise order: top left, top right, bottom
+                    right, bottom left. Only has an effect for
+                    "image" `sourcetype`.
                 fill
                     plotly.graph_objects.layout.mapbox.layer.Fill
                     instance or dict with compatible properties
@@ -15246,19 +15487,23 @@ class Mapbox(_BaseLayoutHierarchyType):
                     opacity)
                 source
                     Sets the source data for this layer
-                    (mapbox.layer.source). Source can be either a
-                    URL, a geojson object (with `sourcetype` set to
-                    "geojson") or an array of tile URLS (with
-                    `sourcetype` set to "vector").
+                    (mapbox.layer.source). When `sourcetype` is set
+                    to "geojson", `source` can be a URL to a
+                    GeoJSON or a GeoJSON object. When `sourcetype`
+                    is set to "vector" or "raster", `source` can be
+                    a URL or an array of tile URLs. When
+                    `sourcetype` is set to "image", `source` can be
+                    a URL to an image.
+                sourceattribution
+                    Sets the attribution for this source.
                 sourcelayer
                     Specifies the layer to use from a vector tile
                     source (mapbox.layer.source-layer). Required
                     for "vector" source type that supports multiple
                     layers.
                 sourcetype
-                    Sets the source type for this layer. Support
-                    for "raster", "image" and "video" source types
-                    is coming soon.
+                    Sets the source type for this layer, that is
+                    the type of the layer data.
                 symbol
                     plotly.graph_objects.layout.mapbox.layer.Symbol
                     instance or dict with compatible properties
@@ -15274,10 +15519,17 @@ class Mapbox(_BaseLayoutHierarchyType):
                     matching item, this item will be hidden unless
                     you explicitly show it with `visible: true`.
                 type
-                    Sets the layer type (mapbox.layer.type).
-                    Support for "raster", "background" types is
-                    coming soon. Note that "line" and "fill" are
-                    not compatible with Point GeoJSON geometries.
+                    Sets the layer type, that is the how the layer
+                    data set in `source` will be rendered With
+                    `sourcetype` set to "geojson", the following
+                    values are allowed: "circle", "line", "fill"
+                    and "symbol". but note that "line" and "fill"
+                    are not compatible with Point GeoJSON
+                    geometries. With `sourcetype` set to "vector",
+                    the following values are allowed:  "circle",
+                    "line", "fill" and "symbol". With `sourcetype`
+                    set to "raster" or `*image*`, only the "raster"
+                    value is allowed.
                 visible
                     Determines whether this layer is displayed
 
@@ -15344,9 +15596,26 @@ class Mapbox(_BaseLayoutHierarchyType):
     @property
     def style(self):
         """
-        Sets the Mapbox map style. Either input one of the default
-        Mapbox style names or the URL to a custom style or a valid
-        Mapbox style JSON.
+        Defines the map layers that are rendered by default below the
+        trace layers defined in `data`, which are themselves by default
+        rendered below the layers defined in `layout.mapbox.layers`.
+        These layers can be defined either explicitly as a Mapbox Style
+        object which can contain multiple layer definitions that load
+        data from any public or private Tile Map Service (TMS or XYZ)
+        or Web Map Service (WMS) or implicitly by using one of the
+        built-in style objects which use WMSes which do not require any
+        access tokens, or by using a default Mapbox style or custom
+        Mapbox style URL, both of which require a Mapbox access token
+        Note that Mapbox access token can be set in the `accesstoken`
+        attribute or in the `mapboxAccessToken` config option.  Mapbox
+        Style objects are of the form described in the Mapbox GL JS
+        documentation available at https://docs.mapbox.com/mapbox-gl-
+        js/style-spec  The built-in plotly.js styles objects are: open-
+        street-map, white-bg, carto-positron, carto-darkmatter, stamen-
+        terrain, stamen-toner, stamen-watercolor  The built-in Mapbox
+        styles are: basic, streets, outdoors, light, dark, satellite,
+        satellite-streets  Mapbox style URLs are of the form:
+        mapbox://mapbox.mapbox-<name>-<version>
     
         The 'style' property accepts values of any type
 
@@ -15416,6 +15685,10 @@ class Mapbox(_BaseLayoutHierarchyType):
             Sets the mapbox access token to be used for this mapbox
             map. Alternatively, the mapbox access token can be set
             in the configuration options under `mapboxAccessToken`.
+            Note that accessToken are only required when `style`
+            (e.g with values : basic, streets, outdoors, light,
+            dark, satellite, satellite-streets ) and/or a layout
+            layer references the Mapbox server.
         bearing
             Sets the bearing angle of the map in degrees counter-
             clockwise from North (mapbox.bearing).
@@ -15438,9 +15711,30 @@ class Mapbox(_BaseLayoutHierarchyType):
             means perpendicular to the surface of the map)
             (mapbox.pitch).
         style
-            Sets the Mapbox map style. Either input one of the
-            default Mapbox style names or the URL to a custom style
-            or a valid Mapbox style JSON.
+            Defines the map layers that are rendered by default
+            below the trace layers defined in `data`, which are
+            themselves by default rendered below the layers defined
+            in `layout.mapbox.layers`.  These layers can be defined
+            either explicitly as a Mapbox Style object which can
+            contain multiple layer definitions that load data from
+            any public or private Tile Map Service (TMS or XYZ) or
+            Web Map Service (WMS) or implicitly by using one of the
+            built-in style objects which use WMSes which do not
+            require any access tokens, or by using a default Mapbox
+            style or custom Mapbox style URL, both of which require
+            a Mapbox access token  Note that Mapbox access token
+            can be set in the `accesstoken` attribute or in the
+            `mapboxAccessToken` config option.  Mapbox Style
+            objects are of the form described in the Mapbox GL JS
+            documentation available at
+            https://docs.mapbox.com/mapbox-gl-js/style-spec  The
+            built-in plotly.js styles objects are: open-street-map,
+            white-bg, carto-positron, carto-darkmatter, stamen-
+            terrain, stamen-toner, stamen-watercolor  The built-in
+            Mapbox styles are: basic, streets, outdoors, light,
+            dark, satellite, satellite-streets  Mapbox style URLs
+            are of the form:
+            mapbox://mapbox.mapbox-<name>-<version>
         uirevision
             Controls persistence of user-driven changes in the
             view: `center`, `zoom`, `bearing`, `pitch`. Defaults to
@@ -15476,6 +15770,10 @@ class Mapbox(_BaseLayoutHierarchyType):
             Sets the mapbox access token to be used for this mapbox
             map. Alternatively, the mapbox access token can be set
             in the configuration options under `mapboxAccessToken`.
+            Note that accessToken are only required when `style`
+            (e.g with values : basic, streets, outdoors, light,
+            dark, satellite, satellite-streets ) and/or a layout
+            layer references the Mapbox server.
         bearing
             Sets the bearing angle of the map in degrees counter-
             clockwise from North (mapbox.bearing).
@@ -15498,9 +15796,30 @@ class Mapbox(_BaseLayoutHierarchyType):
             means perpendicular to the surface of the map)
             (mapbox.pitch).
         style
-            Sets the Mapbox map style. Either input one of the
-            default Mapbox style names or the URL to a custom style
-            or a valid Mapbox style JSON.
+            Defines the map layers that are rendered by default
+            below the trace layers defined in `data`, which are
+            themselves by default rendered below the layers defined
+            in `layout.mapbox.layers`.  These layers can be defined
+            either explicitly as a Mapbox Style object which can
+            contain multiple layer definitions that load data from
+            any public or private Tile Map Service (TMS or XYZ) or
+            Web Map Service (WMS) or implicitly by using one of the
+            built-in style objects which use WMSes which do not
+            require any access tokens, or by using a default Mapbox
+            style or custom Mapbox style URL, both of which require
+            a Mapbox access token  Note that Mapbox access token
+            can be set in the `accesstoken` attribute or in the
+            `mapboxAccessToken` config option.  Mapbox Style
+            objects are of the form described in the Mapbox GL JS
+            documentation available at
+            https://docs.mapbox.com/mapbox-gl-js/style-spec  The
+            built-in plotly.js styles objects are: open-street-map,
+            white-bg, carto-positron, carto-darkmatter, stamen-
+            terrain, stamen-toner, stamen-watercolor  The built-in
+            Mapbox styles are: basic, streets, outdoors, light,
+            dark, satellite, satellite-streets  Mapbox style URLs
+            are of the form:
+            mapbox://mapbox.mapbox-<name>-<version>
         uirevision
             Controls persistence of user-driven changes in the
             view: `center`, `zoom`, `bearing`, `pitch`. Defaults to
@@ -15594,7 +15913,8 @@ class Legend(_BaseLayoutHierarchyType):
     @property
     def bgcolor(self):
         """
-        Sets the legend background color.
+        Sets the legend background color. Defaults to
+        `layout.paper_bgcolor`.
     
         The 'bgcolor' property is a color and may be specified as:
           - A hex string (e.g. '#ff0000')
@@ -15864,6 +16184,41 @@ class Legend(_BaseLayoutHierarchyType):
     def orientation(self, val):
         self["orientation"] = val
 
+    # title
+    # -----
+    @property
+    def title(self):
+        """
+        The 'title' property is an instance of Title
+        that may be specified as:
+          - An instance of plotly.graph_objs.layout.legend.Title
+          - A dict of string/value properties that will be passed
+            to the Title constructor
+    
+            Supported dict properties:
+                
+                font
+                    Sets this legend's title font.
+                side
+                    Determines the location of legend's title with
+                    respect to the legend items. Defaulted to "top"
+                    with `orientation` is "h". Defaulted to "left"
+                    with `orientation` is "v". The *top left*
+                    options could be used to expand legend area in
+                    both x and y sides.
+                text
+                    Sets the title of the legend.
+
+        Returns
+        -------
+        plotly.graph_objs.layout.legend.Title
+        """
+        return self["title"]
+
+    @title.setter
+    def title(self, val):
+        self["title"] = val
+
     # tracegroupgap
     # -------------
     @property
@@ -15962,6 +16317,8 @@ class Legend(_BaseLayoutHierarchyType):
     def x(self):
         """
         Sets the x position (in normalized coordinates) of the legend.
+        Defaults to 1.02 for vertical legends and defaults to 0 for
+        horizontal legends.
     
         The 'x' property is a number and may be specified as:
           - An int or float in the interval [-2, 3]
@@ -15983,7 +16340,10 @@ class Legend(_BaseLayoutHierarchyType):
         """
         Sets the legend's horizontal position anchor. This anchor binds
         the `x` position to the "left", "center" or "right" of the
-        legend.
+        legend. Value "auto" anchors legends to the right for `x`
+        values greater than or equal to 2/3, anchors legends to the
+        left for `x` values less than or equal to 1/3 and anchors
+        legends with respect to their center otherwise.
     
         The 'xanchor' property is an enumeration that may be specified as:
           - One of the following enumeration values:
@@ -16005,6 +16365,10 @@ class Legend(_BaseLayoutHierarchyType):
     def y(self):
         """
         Sets the y position (in normalized coordinates) of the legend.
+        Defaults to 1 for vertical legends, defaults to "-0.1" for
+        horizontal legends on graphs w/o range sliders and defaults to
+        1.1 for horizontal legends on graph with one or multiple range
+        sliders.
     
         The 'y' property is a number and may be specified as:
           - An int or float in the interval [-2, 3]
@@ -16026,7 +16390,10 @@ class Legend(_BaseLayoutHierarchyType):
         """
         Sets the legend's vertical position anchor This anchor binds
         the `y` position to the "top", "middle" or "bottom" of the
-        legend.
+        legend. Value "auto" anchors legends at their bottom for `y`
+        values less than or equal to 1/3, anchors legends to at their
+        top for `y` values greater than or equal to 2/3 and anchors
+        legends with respect to their middle otherwise.
     
         The 'yanchor' property is an enumeration that may be specified as:
           - One of the following enumeration values:
@@ -16054,7 +16421,8 @@ class Legend(_BaseLayoutHierarchyType):
     def _prop_descriptions(self):
         return """\
         bgcolor
-            Sets the legend background color.
+            Sets the legend background color. Defaults to
+            `layout.paper_bgcolor`.
         bordercolor
             Sets the color of the border enclosing the legend.
         borderwidth
@@ -16080,6 +16448,9 @@ class Legend(_BaseLayoutHierarchyType):
             independent of the symbol size on the graph.
         orientation
             Sets the orientation of the legend.
+        title
+            plotly.graph_objects.layout.legend.Title instance or
+            dict with compatible properties
         tracegroupgap
             Sets the amount of vertical space (in px) between
             legend groups.
@@ -16101,18 +16472,30 @@ class Legend(_BaseLayoutHierarchyType):
             to their associated text.
         x
             Sets the x position (in normalized coordinates) of the
-            legend.
+            legend. Defaults to 1.02 for vertical legends and
+            defaults to 0 for horizontal legends.
         xanchor
             Sets the legend's horizontal position anchor. This
             anchor binds the `x` position to the "left", "center"
-            or "right" of the legend.
+            or "right" of the legend. Value "auto" anchors legends
+            to the right for `x` values greater than or equal to
+            2/3, anchors legends to the left for `x` values less
+            than or equal to 1/3 and anchors legends with respect
+            to their center otherwise.
         y
             Sets the y position (in normalized coordinates) of the
-            legend.
+            legend. Defaults to 1 for vertical legends, defaults to
+            "-0.1" for horizontal legends on graphs w/o range
+            sliders and defaults to 1.1 for horizontal legends on
+            graph with one or multiple range sliders.
         yanchor
             Sets the legend's vertical position anchor This anchor
             binds the `y` position to the "top", "middle" or
-            "bottom" of the legend.
+            "bottom" of the legend. Value "auto" anchors legends at
+            their bottom for `y` values less than or equal to 1/3,
+            anchors legends to at their top for `y` values greater
+            than or equal to 2/3 and anchors legends with respect
+            to their middle otherwise.
         """
 
     def __init__(
@@ -16126,6 +16509,7 @@ class Legend(_BaseLayoutHierarchyType):
         itemdoubleclick=None,
         itemsizing=None,
         orientation=None,
+        title=None,
         tracegroupgap=None,
         traceorder=None,
         uirevision=None,
@@ -16145,7 +16529,8 @@ class Legend(_BaseLayoutHierarchyType):
             dict of properties compatible with this constructor or
             an instance of plotly.graph_objs.layout.Legend
         bgcolor
-            Sets the legend background color.
+            Sets the legend background color. Defaults to
+            `layout.paper_bgcolor`.
         bordercolor
             Sets the color of the border enclosing the legend.
         borderwidth
@@ -16171,6 +16556,9 @@ class Legend(_BaseLayoutHierarchyType):
             independent of the symbol size on the graph.
         orientation
             Sets the orientation of the legend.
+        title
+            plotly.graph_objects.layout.legend.Title instance or
+            dict with compatible properties
         tracegroupgap
             Sets the amount of vertical space (in px) between
             legend groups.
@@ -16192,18 +16580,30 @@ class Legend(_BaseLayoutHierarchyType):
             to their associated text.
         x
             Sets the x position (in normalized coordinates) of the
-            legend.
+            legend. Defaults to 1.02 for vertical legends and
+            defaults to 0 for horizontal legends.
         xanchor
             Sets the legend's horizontal position anchor. This
             anchor binds the `x` position to the "left", "center"
-            or "right" of the legend.
+            or "right" of the legend. Value "auto" anchors legends
+            to the right for `x` values greater than or equal to
+            2/3, anchors legends to the left for `x` values less
+            than or equal to 1/3 and anchors legends with respect
+            to their center otherwise.
         y
             Sets the y position (in normalized coordinates) of the
-            legend.
+            legend. Defaults to 1 for vertical legends, defaults to
+            "-0.1" for horizontal legends on graphs w/o range
+            sliders and defaults to 1.1 for horizontal legends on
+            graph with one or multiple range sliders.
         yanchor
             Sets the legend's vertical position anchor This anchor
             binds the `y` position to the "top", "middle" or
-            "bottom" of the legend.
+            "bottom" of the legend. Value "auto" anchors legends at
+            their bottom for `y` values less than or equal to 1/3,
+            anchors legends to at their top for `y` values greater
+            than or equal to 2/3 and anchors legends with respect
+            to their middle otherwise.
 
         Returns
         -------
@@ -16245,6 +16645,7 @@ an instance of plotly.graph_objs.layout.Legend"""
         self._validators["itemdoubleclick"] = v_legend.ItemdoubleclickValidator()
         self._validators["itemsizing"] = v_legend.ItemsizingValidator()
         self._validators["orientation"] = v_legend.OrientationValidator()
+        self._validators["title"] = v_legend.TitleValidator()
         self._validators["tracegroupgap"] = v_legend.TracegroupgapValidator()
         self._validators["traceorder"] = v_legend.TraceorderValidator()
         self._validators["uirevision"] = v_legend.UirevisionValidator()
@@ -16272,6 +16673,8 @@ an instance of plotly.graph_objs.layout.Legend"""
         self["itemsizing"] = itemsizing if itemsizing is not None else _v
         _v = arg.pop("orientation", None)
         self["orientation"] = orientation if orientation is not None else _v
+        _v = arg.pop("title", None)
+        self["title"] = title if title is not None else _v
         _v = arg.pop("tracegroupgap", None)
         self["tracegroupgap"] = tracegroupgap if tracegroupgap is not None else _v
         _v = arg.pop("traceorder", None)
@@ -18162,6 +18565,39 @@ class Geo(_BaseLayoutHierarchyType):
     def domain(self, val):
         self["domain"] = val
 
+    # fitbounds
+    # ---------
+    @property
+    def fitbounds(self):
+        """
+        Determines if this subplot's view settings are auto-computed to
+        fit trace data. On scoped maps, setting `fitbounds` leads to
+        `center.lon` and `center.lat` getting auto-filled. On maps with
+        a non-clipped projection, setting `fitbounds` leads to
+        `center.lon`, `center.lat`, and `projection.rotation.lon`
+        getting auto-filled. On maps with a clipped projection, setting
+        `fitbounds` leads to `center.lon`, `center.lat`,
+        `projection.rotation.lon`, `projection.rotation.lat`,
+        `lonaxis.range` and `lonaxis.range` getting auto-filled. If
+        "locations", only the trace's visible locations are considered
+        in the `fitbounds` computations. If "geojson", the entire trace
+        input `geojson` (if provided) is considered in the `fitbounds`
+        computations, Defaults to False.
+    
+        The 'fitbounds' property is an enumeration that may be specified as:
+          - One of the following enumeration values:
+                [False, 'locations', 'geojson']
+
+        Returns
+        -------
+        Any
+        """
+        return self["fitbounds"]
+
+    @fitbounds.setter
+    def fitbounds(self, val):
+        self["fitbounds"] = val
+
     # framecolor
     # ----------
     @property
@@ -18920,6 +19356,26 @@ class Geo(_BaseLayoutHierarchyType):
     def uirevision(self, val):
         self["uirevision"] = val
 
+    # visible
+    # -------
+    @property
+    def visible(self):
+        """
+        Sets the default visibility of the base layers.
+    
+        The 'visible' property must be specified as a bool
+        (either True, or False)
+
+        Returns
+        -------
+        bool
+        """
+        return self["visible"]
+
+    @visible.setter
+    def visible(self, val):
+        self["visible"] = val
+
     # property parent name
     # --------------------
     @property
@@ -18947,6 +19403,22 @@ class Geo(_BaseLayoutHierarchyType):
         domain
             plotly.graph_objects.layout.geo.Domain instance or dict
             with compatible properties
+        fitbounds
+            Determines if this subplot's view settings are auto-
+            computed to fit trace data. On scoped maps, setting
+            `fitbounds` leads to `center.lon` and `center.lat`
+            getting auto-filled. On maps with a non-clipped
+            projection, setting `fitbounds` leads to `center.lon`,
+            `center.lat`, and `projection.rotation.lon` getting
+            auto-filled. On maps with a clipped projection, setting
+            `fitbounds` leads to `center.lon`, `center.lat`,
+            `projection.rotation.lon`, `projection.rotation.lat`,
+            `lonaxis.range` and `lonaxis.range` getting auto-
+            filled. If "locations", only the trace's visible
+            locations are considered in the `fitbounds`
+            computations. If "geojson", the entire trace input
+            `geojson` (if provided) is considered in the
+            `fitbounds` computations, Defaults to False.
         framecolor
             Sets the color the frame.
         framewidth
@@ -19002,6 +19474,8 @@ class Geo(_BaseLayoutHierarchyType):
             Controls persistence of user-driven changes in the view
             (projection and center). Defaults to
             `layout.uirevision`.
+        visible
+            Sets the default visibility of the base layers.
         """
 
     def __init__(
@@ -19014,6 +19488,7 @@ class Geo(_BaseLayoutHierarchyType):
         countrycolor=None,
         countrywidth=None,
         domain=None,
+        fitbounds=None,
         framecolor=None,
         framewidth=None,
         lakecolor=None,
@@ -19037,6 +19512,7 @@ class Geo(_BaseLayoutHierarchyType):
         subunitcolor=None,
         subunitwidth=None,
         uirevision=None,
+        visible=None,
         **kwargs
     ):
         """
@@ -19063,6 +19539,22 @@ class Geo(_BaseLayoutHierarchyType):
         domain
             plotly.graph_objects.layout.geo.Domain instance or dict
             with compatible properties
+        fitbounds
+            Determines if this subplot's view settings are auto-
+            computed to fit trace data. On scoped maps, setting
+            `fitbounds` leads to `center.lon` and `center.lat`
+            getting auto-filled. On maps with a non-clipped
+            projection, setting `fitbounds` leads to `center.lon`,
+            `center.lat`, and `projection.rotation.lon` getting
+            auto-filled. On maps with a clipped projection, setting
+            `fitbounds` leads to `center.lon`, `center.lat`,
+            `projection.rotation.lon`, `projection.rotation.lat`,
+            `lonaxis.range` and `lonaxis.range` getting auto-
+            filled. If "locations", only the trace's visible
+            locations are considered in the `fitbounds`
+            computations. If "geojson", the entire trace input
+            `geojson` (if provided) is considered in the
+            `fitbounds` computations, Defaults to False.
         framecolor
             Sets the color the frame.
         framewidth
@@ -19118,6 +19610,8 @@ class Geo(_BaseLayoutHierarchyType):
             Controls persistence of user-driven changes in the view
             (projection and center). Defaults to
             `layout.uirevision`.
+        visible
+            Sets the default visibility of the base layers.
 
         Returns
         -------
@@ -19158,6 +19652,7 @@ an instance of plotly.graph_objs.layout.Geo"""
         self._validators["countrycolor"] = v_geo.CountrycolorValidator()
         self._validators["countrywidth"] = v_geo.CountrywidthValidator()
         self._validators["domain"] = v_geo.DomainValidator()
+        self._validators["fitbounds"] = v_geo.FitboundsValidator()
         self._validators["framecolor"] = v_geo.FramecolorValidator()
         self._validators["framewidth"] = v_geo.FramewidthValidator()
         self._validators["lakecolor"] = v_geo.LakecolorValidator()
@@ -19181,6 +19676,7 @@ an instance of plotly.graph_objs.layout.Geo"""
         self._validators["subunitcolor"] = v_geo.SubunitcolorValidator()
         self._validators["subunitwidth"] = v_geo.SubunitwidthValidator()
         self._validators["uirevision"] = v_geo.UirevisionValidator()
+        self._validators["visible"] = v_geo.VisibleValidator()
 
         # Populate data dict with properties
         # ----------------------------------
@@ -19198,6 +19694,8 @@ an instance of plotly.graph_objs.layout.Geo"""
         self["countrywidth"] = countrywidth if countrywidth is not None else _v
         _v = arg.pop("domain", None)
         self["domain"] = domain if domain is not None else _v
+        _v = arg.pop("fitbounds", None)
+        self["fitbounds"] = fitbounds if fitbounds is not None else _v
         _v = arg.pop("framecolor", None)
         self["framecolor"] = framecolor if framecolor is not None else _v
         _v = arg.pop("framewidth", None)
@@ -19244,6 +19742,8 @@ an instance of plotly.graph_objs.layout.Geo"""
         self["subunitwidth"] = subunitwidth if subunitwidth is not None else _v
         _v = arg.pop("uirevision", None)
         self["uirevision"] = uirevision if uirevision is not None else _v
+        _v = arg.pop("visible", None)
+        self["visible"] = visible if visible is not None else _v
 
         # Process unknown kwargs
         # ----------------------
@@ -19519,7 +20019,8 @@ class Colorscale(_BaseLayoutHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -19563,7 +20064,8 @@ class Colorscale(_BaseLayoutHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -19607,7 +20109,8 @@ class Colorscale(_BaseLayoutHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -19970,12 +20473,13 @@ class Coloraxis(_BaseLayoutHierarchyType):
                 tickformat
                     Sets the tick label formatting rule using d3
                     formatting mini-languages which are very
-                    similar to those in Python. For numbers, see: h
-                    ttps://github.com/d3/d3-format/blob/master/READ
-                    ME.md#locale_format And for dates see:
-                    https://github.com/d3/d3-time-
-                    format/blob/master/README.md#locale_format We
-                    add one item to d3's date formatter: "%{n}f"
+                    similar to those in Python. For numbers, see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Formatting.md#d3_format
+                    And for dates see:
+                    https://github.com/d3/d3-3.x-api-
+                    reference/blob/master/Time-Formatting.md#format
+                    We add one item to d3's date formatter: "%{n}f"
                     for fractional seconds with n digits. For
                     example, *2016-10-13 09:15:23.456* with
                     tickformat "%H~%M~%S.%2f" would display
@@ -20087,7 +20591,7 @@ class Coloraxis(_BaseLayoutHierarchyType):
         arrays mapping a normalized value to an rgb, rgba, hex, hsl,
         hsv, or named color string. At minimum, a mapping for the
         lowest (0) and highest (1) values are required. For example,
-        `[[0, 'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To control the
+        `[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`. To control the
         bounds of the colorscale in color space, use`cmin` and `cmax`.
         Alternatively, `colorscale` may be a palette name string of the
         following list: Greys,YlGnBu,Greens,YlOrRd,Bluered,RdBu,Reds,Bl
@@ -20117,7 +20621,8 @@ class Coloraxis(_BaseLayoutHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -20217,7 +20722,7 @@ class Coloraxis(_BaseLayoutHierarchyType):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -20289,7 +20794,7 @@ class Coloraxis(_BaseLayoutHierarchyType):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -22700,6 +23205,57 @@ an instance of plotly.graph_objs.layout.AngularAxis"""
         # ------------------
         self._skip_invalid = False
 
+
+__all__ = [
+    "AngularAxis",
+    "Annotation",
+    "Annotation",
+    "Coloraxis",
+    "Colorscale",
+    "Font",
+    "Geo",
+    "Grid",
+    "Hoverlabel",
+    "Image",
+    "Image",
+    "Legend",
+    "Mapbox",
+    "Margin",
+    "Modebar",
+    "Polar",
+    "RadialAxis",
+    "Scene",
+    "Shape",
+    "Shape",
+    "Slider",
+    "Slider",
+    "Template",
+    "Ternary",
+    "Title",
+    "Transition",
+    "Uniformtext",
+    "Updatemenu",
+    "Updatemenu",
+    "XAxis",
+    "YAxis",
+    "annotation",
+    "coloraxis",
+    "geo",
+    "grid",
+    "hoverlabel",
+    "legend",
+    "mapbox",
+    "polar",
+    "scene",
+    "shape",
+    "slider",
+    "template",
+    "ternary",
+    "title",
+    "updatemenu",
+    "xaxis",
+    "yaxis",
+]
 
 from plotly.graph_objs.layout import yaxis
 from plotly.graph_objs.layout import xaxis

@@ -252,14 +252,11 @@ class BaseFigure(object):
         # Dict from trace indexes to trace edit dicts. These trace edit dicts
         # are suitable as `data` elements of Plotly.animate, but not
         # the Plotly.update (See `_build_update_params_from_batch`)
-        #
-        # type: OrderedDict[int, OrderedDict[str, typ.Any]]
         self._batch_trace_edits = OrderedDict()
 
         # ### Batch layout edits ###
         # Dict from layout properties to new layout values. This dict is
         # directly suitable for use in Plotly.animate and Plotly.update
-        # type: collections.OrderedDict[str, typ.Any]
         self._batch_layout_edits = OrderedDict()
 
         # Animation property validators
@@ -436,9 +433,9 @@ class BaseFigure(object):
         if pio.renderers.render_on_display and pio.renderers.default:
             pio.show(self)
         else:
-            print (repr(self))
+            print(repr(self))
 
-    def update(self, dict1=None, **kwargs):
+    def update(self, dict1=None, overwrite=False, **kwargs):
         """
         Update the properties of the figure with a dict and/or with
         keyword arguments.
@@ -450,6 +447,10 @@ class BaseFigure(object):
         ----------
         dict1 : dict
             Dictionary of properties to be updated
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         kwargs :
             Keyword/value pair of properties to be updated
 
@@ -457,8 +458,9 @@ class BaseFigure(object):
         --------
         >>> import plotly.graph_objs as go
         >>> fig = go.Figure(data=[{'y': [1, 2, 3]}])
-        >>> fig.update(data=[{'y': [4, 5, 6]}])
-        >>> fig.to_plotly_json()
+        >>> fig.update(data=[{'y': [4, 5, 6]}]) # doctest: +ELLIPSIS
+        Figure(...)
+        >>> fig.to_plotly_json() # doctest: +SKIP
             {'data': [{'type': 'scatter',
                'uid': 'e86a7c7a-346a-11e8-8aa8-a0999b0c017b',
                'y': array([4, 5, 6], dtype=int32)}],
@@ -467,8 +469,9 @@ class BaseFigure(object):
         >>> fig = go.Figure(layout={'xaxis':
         ...                         {'color': 'green',
         ...                          'range': [0, 1]}})
-        >>> fig.update({'layout': {'xaxis': {'color': 'pink'}}})
-        >>> fig.to_plotly_json()
+        >>> fig.update({'layout': {'xaxis': {'color': 'pink'}}}) # doctest: +ELLIPSIS
+        Figure(...)
+        >>> fig.to_plotly_json() # doctest: +SKIP
             {'data': [],
              'layout': {'xaxis':
                         {'color': 'pink',
@@ -484,15 +487,19 @@ class BaseFigure(object):
                 if d:
                     for k, v in d.items():
                         update_target = self[k]
-                        if update_target == ():
-                            # existing data or frames property is empty
-                            # In this case we accept the v as is.
+                        if update_target == () or overwrite:
                             if k == "data":
+                                # Overwrite all traces as special due to
+                                # restrictions on trace assignment
+                                self.data = ()
                                 self.add_traces(v)
                             else:
                                 # Accept v
                                 self[k] = v
-                        elif isinstance(update_target, BasePlotlyType) or (
+                        elif (
+                            isinstance(update_target, BasePlotlyType)
+                            and isinstance(v, (dict, BasePlotlyType))
+                        ) or (
                             isinstance(update_target, tuple)
                             and isinstance(update_target[0], BasePlotlyType)
                         ):
@@ -843,7 +850,14 @@ class BaseFigure(object):
         return self
 
     def update_traces(
-        self, patch=None, selector=None, row=None, col=None, secondary_y=None, **kwargs
+        self,
+        patch=None,
+        selector=None,
+        row=None,
+        col=None,
+        secondary_y=None,
+        overwrite=False,
+        **kwargs
     ):
         """
         Perform a property update operation on all traces that satisfy the
@@ -877,6 +891,10 @@ class BaseFigure(object):
             created using plotly.subplots.make_subplots. See the docstring
             for the specs argument to make_subplots for more info on
             creating subplots with secondary y-axes.
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         **kwargs
             Additional property updates to apply to each selected trace. If
             a property is specified in both patch and in **kwargs then the
@@ -890,10 +908,10 @@ class BaseFigure(object):
         for trace in self.select_traces(
             selector=selector, row=row, col=col, secondary_y=secondary_y
         ):
-            trace.update(patch, **kwargs)
+            trace.update(patch, overwrite=overwrite, **kwargs)
         return self
 
-    def update_layout(self, dict1=None, **kwargs):
+    def update_layout(self, dict1=None, overwrite=False, **kwargs):
         """
         Update the properties of the figure's layout with a dict and/or with
         keyword arguments.
@@ -905,6 +923,10 @@ class BaseFigure(object):
         ----------
         dict1 : dict
             Dictionary of properties to be updated
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         kwargs :
             Keyword/value pair of properties to be updated
 
@@ -913,7 +935,7 @@ class BaseFigure(object):
         BaseFigure
             The Figure object that the update_layout method was called on
         """
-        self.layout.update(dict1, **kwargs)
+        self.layout.update(dict1, overwrite=overwrite, **kwargs)
         return self
 
     def _select_layout_subplots_by_prefix(
@@ -978,6 +1000,108 @@ class BaseFigure(object):
 
                 yield self.layout[k]
 
+    def _select_annotations_like(
+        self, prop, selector=None, row=None, col=None, secondary_y=None
+    ):
+        """
+        Helper to select annotation-like elements from a layout object array.
+        Compatible with layout.annotations, layout.shapes, and layout.images
+        """
+        xref_to_col = {}
+        yref_to_row = {}
+        yref_to_secondary_y = {}
+        if isinstance(row, int) or isinstance(col, int) or secondary_y is not None:
+            grid_ref = self._validate_get_grid_ref()
+            for r, subplot_row in enumerate(grid_ref):
+                for c, subplot_refs in enumerate(subplot_row):
+                    if not subplot_refs:
+                        continue
+
+                    for i, subplot_ref in enumerate(subplot_refs):
+                        if subplot_ref.subplot_type == "xy":
+                            is_secondary_y = i == 1
+                            xaxis, yaxis = subplot_ref.layout_keys
+                            xref = xaxis.replace("axis", "")
+                            yref = yaxis.replace("axis", "")
+                            xref_to_col[xref] = c + 1
+                            yref_to_row[yref] = r + 1
+                            yref_to_secondary_y[yref] = is_secondary_y
+
+        for obj in self.layout[prop]:
+            # Filter by row
+            if col is not None and xref_to_col.get(obj.xref, None) != col:
+                continue
+
+            # Filter by col
+            if row is not None and yref_to_row.get(obj.yref, None) != row:
+                continue
+
+            # Filter by secondary y
+            if (
+                secondary_y is not None
+                and yref_to_secondary_y.get(obj.yref, None) != secondary_y
+            ):
+                continue
+
+            # Filter by selector
+            if not self._selector_matches(obj, selector):
+                continue
+
+            yield obj
+
+    def _add_annotation_like(
+        self, prop_singular, prop_plural, new_obj, row=None, col=None, secondary_y=None
+    ):
+        # Make sure we have both row and col or neither
+        if row is not None and col is None:
+            raise ValueError(
+                "Received row parameter but not col.\n"
+                "row and col must be specified together"
+            )
+        elif col is not None and row is None:
+            raise ValueError(
+                "Received col parameter but not row.\n"
+                "row and col must be specified together"
+            )
+
+        # Get grid_ref if specific row or column requested
+        if row is not None:
+            grid_ref = self._validate_get_grid_ref()
+            refs = grid_ref[row - 1][col - 1]
+
+            if not refs:
+                raise ValueError(
+                    "No subplot found at position ({r}, {c})".format(r=row, c=col)
+                )
+
+            if refs[0].subplot_type != "xy":
+                raise ValueError(
+                    """
+Cannot add {prop_singular} to subplot at position ({r}, {c}) because subplot 
+is of type {subplot_type}.""".format(
+                        prop_singular=prop_singular,
+                        r=row,
+                        c=col,
+                        subplot_type=refs[0].subplot_type,
+                    )
+                )
+            if len(refs) == 1 and secondary_y:
+                raise ValueError(
+                    """
+Cannot add {prop_singular} to secondary y-axis of subplot at position ({r}, {c})
+because subplot does not have a secondary y-axis"""
+                )
+            if secondary_y:
+                xaxis, yaxis = refs[1].layout_keys
+            else:
+                xaxis, yaxis = refs[0].layout_keys
+            xref, yref = xaxis.replace("axis", ""), yaxis.replace("axis", "")
+            new_obj.update(xref=xref, yref=yref)
+
+        self.layout[prop_plural] += (new_obj,)
+
+        return self
+
     # Restyle
     # -------
     def plotly_restyle(self, restyle_data, trace_indexes=None, **kwargs):
@@ -1006,6 +1130,8 @@ class BaseFigure(object):
             example, the following command would be used to update the 'x'
             property of the first trace to the list [1, 2, 3]
 
+            >>> import plotly.graph_objects as go
+            >>> fig = go.Figure(go.Scatter(x=[2, 4, 6]))
             >>> fig.plotly_restyle({'x': [[1, 2, 3]]}, 0)
 
         trace_indexes : int or list of int
@@ -1457,27 +1583,27 @@ Invalid property path '{key_path_str}' for trace class {trace_class}
 
         Examples
         --------
+
         >>> from plotly import subplots
         >>> import plotly.graph_objs as go
 
         Add two Scatter traces to a figure
+
         >>> fig = go.Figure()
-        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]))
-        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]))
+        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2])) # doctest: +ELLIPSIS
+        Figure(...)
+        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2])) # doctest: +ELLIPSIS
+        Figure(...)
 
 
         Add two Scatter traces to vertically stacked subplots
+
         >>> fig = subplots.make_subplots(rows=2)
-        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]), row=1, col=1)
-        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]), row=2, col=1)
+        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]), row=1, col=1) # doctest: +ELLIPSIS
+        Figure(...)
+        >>> fig.add_trace(go.Scatter(x=[1,2,3], y=[2,1,2]), row=2, col=1) # doctest: +ELLIPSIS
+        Figure(...)
         """
-        # Validate row/col
-        if row is not None and not isinstance(row, int):
-            pass
-
-        if col is not None and not isinstance(col, int):
-            pass
-
         # Make sure we have both row and col or neither
         if row is not None and col is None:
             raise ValueError(
@@ -1536,19 +1662,24 @@ Invalid property path '{key_path_str}' for trace class {trace_class}
 
         Examples
         --------
+
         >>> from plotly import subplots
         >>> import plotly.graph_objs as go
 
         Add two Scatter traces to a figure
+
         >>> fig = go.Figure()
         >>> fig.add_traces([go.Scatter(x=[1,2,3], y=[2,1,2]),
-        ...                 go.Scatter(x=[1,2,3], y=[2,1,2])])
+        ...                 go.Scatter(x=[1,2,3], y=[2,1,2])]) # doctest: +ELLIPSIS
+        Figure(...)
 
         Add two Scatter traces to vertically stacked subplots
+
         >>> fig = subplots.make_subplots(rows=2)
         >>> fig.add_traces([go.Scatter(x=[1,2,3], y=[2,1,2]),
         ...                 go.Scatter(x=[1,2,3], y=[2,1,2])],
-        ...                 rows=[1, 2], cols=[1, 1])
+        ...                 rows=[1, 2], cols=[1, 1]) # doctest: +ELLIPSIS
+        Figure(...)
         """
 
         # Validate traces
@@ -1622,7 +1753,7 @@ Invalid property path '{key_path_str}' for trace class {trace_class}
             raise Exception(
                 "Use plotly.tools.make_subplots " "to create a subplot grid."
             )
-        print (self._grid_str)
+        print(self._grid_str)
 
     def append_trace(self, trace, row, col):
         """
@@ -1644,10 +1775,12 @@ Invalid property path '{key_path_str}' for trace class {trace_class}
 
         Examples
         --------
+
         >>> from plotly import tools
         >>> import plotly.graph_objs as go
-        # stack two subplots vertically
+        >>> # stack two subplots vertically
         >>> fig = tools.make_subplots(rows=2)
+
         This is the format of your plot grid:
         [ (1,1) x1,y1 ]
         [ (2,1) x2,y2 ]
@@ -1816,7 +1949,7 @@ Please use the add_trace method with the row and col parameters.
             if pio.templates.default is not None:
                 self._layout_obj.template = pio.templates.default
             else:
-                self._layout_obj.template = {}
+                self._layout_obj.template = None
 
     @property
     def layout(self):
@@ -2029,11 +2162,12 @@ Invalid property path '{key_path_str}' for layout
 
         Examples
         --------
+
         >>> key_path_strs = ['xaxis.rangeselector.font.color',
         ...                  'xaxis.rangeselector.bgcolor']
 
-        >>> BaseFigure._build_dispatch_plan(key_path_strs)
-            {(): {('xaxis',),
+        >>> BaseFigure._build_dispatch_plan(key_path_strs) # doctest: +SKIP
+            {(): {'xaxis',
                   ('xaxis', 'rangeselector'),
                   ('xaxis', 'rangeselector', 'bgcolor'),
                   ('xaxis', 'rangeselector', 'font'),
@@ -2296,6 +2430,7 @@ Invalid property path '{key_path_str}' for layout
         --------
         For example, suppose we have a figure widget, `fig`, with a single
         trace.
+
         >>> import plotly.graph_objs as go
         >>> fig = go.FigureWidget(data=[{'y': [3, 4, 2]}])
 
@@ -2464,7 +2599,8 @@ Invalid property path '{key_path_str}' for layout
 
         2) Animate a change in the size and color of the trace's markers
         over 2 seconds using the elastic-in-out easing method
-        >>> with fig.batch_update(duration=2000, easing='elastic-in-out'):
+
+        >>> with fig.batch_animate(duration=2000, easing='elastic-in-out'):
         ...     fig.data[0].marker.color = 'green'
         ...     fig.data[0].marker.size = 20
         """
@@ -2697,7 +2833,7 @@ Invalid property path '{key_path_str}' for layout
         return isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict)
 
     @staticmethod
-    def _perform_update(plotly_obj, update_obj):
+    def _perform_update(plotly_obj, update_obj, overwrite=False):
         """
         Helper to support the update() methods on :class:`BaseFigure` and
         :class:`BasePlotlyType`
@@ -2747,6 +2883,12 @@ Invalid property path '{key_path_str}' for layout
             # ------------------------
             for key in update_obj:
                 val = update_obj[key]
+
+                if overwrite:
+                    # Don't recurse and assign property as-is
+                    plotly_obj[key] = val
+                    continue
+
                 validator = plotly_obj._get_prop_validator(key)
 
                 if isinstance(validator, CompoundValidator) and isinstance(val, dict):
@@ -2849,38 +2991,32 @@ class BasePlotlyType(object):
         # ---------------------
         # ### _validators ###
         # A dict from property names to property validators
-        # type: Dict[str, BaseValidator]
         self._validators = {}
 
         # ### _compound_props ###
         # A dict from compound property names to compound objects
-        # type: Dict[str, BasePlotlyType]
         self._compound_props = {}
 
         # ### _compound_array_props ###
         # A dict from compound array property names to tuples of compound
         # objects
-        # type: Dict[str, Tuple[BasePlotlyType]]
         self._compound_array_props = {}
 
         # ### _orphan_props ###
         # A dict of properties for use while object has no parent. When
         # object has a parent, it requests its properties dict from its
         # parent and doesn't use this.
-        # type: Dict
         self._orphan_props = {}
 
         # ### _parent ###
         # The parent of the object. May be another BasePlotlyType or it may
         # be a BaseFigure (as is the case for the Layout and Trace objects)
-        # type: Union[BasePlotlyType, BaseFigure]
         self._parent = None
 
         # ### _change_callbacks ###
         # A dict from tuples of child property path tuples to lists
         # of callbacks that should be executed whenever any of these
         # properties is modified
-        # type: Dict[Tuple[Tuple[Union[str, int]]], List[Callable]]
         self._change_callbacks = {}
 
     def _process_kwargs(self, **kwargs):
@@ -2920,6 +3056,7 @@ class BasePlotlyType(object):
 
         Examples
         --------
+
         >>> import plotly.graph_objs as go
         >>> go.Layout()._parent_path_str
         ''
@@ -3530,7 +3667,7 @@ class BasePlotlyType(object):
                 )
             )
 
-    def update(self, dict1=None, **kwargs):
+    def update(self, dict1=None, overwrite=False, **kwargs):
         """
         Update the properties of an object with a dict and/or with
         keyword arguments.
@@ -3542,6 +3679,10 @@ class BasePlotlyType(object):
         ----------
         dict1 : dict
             Dictionary of properties to be updated
+        overwrite: bool
+            If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
         kwargs :
             Keyword/value pair of properties to be updated
 
@@ -3552,11 +3693,11 @@ class BasePlotlyType(object):
         """
         if self.figure:
             with self.figure.batch_update():
-                BaseFigure._perform_update(self, dict1)
-                BaseFigure._perform_update(self, kwargs)
+                BaseFigure._perform_update(self, dict1, overwrite=overwrite)
+                BaseFigure._perform_update(self, kwargs, overwrite=overwrite)
         else:
-            BaseFigure._perform_update(self, dict1)
-            BaseFigure._perform_update(self, kwargs)
+            BaseFigure._perform_update(self, dict1, overwrite=overwrite)
+            BaseFigure._perform_update(self, kwargs, overwrite=overwrite)
 
         return self
 
@@ -3692,7 +3833,6 @@ class BasePlotlyType(object):
         # Import value
         # ------------
         validator = self._validators.get(prop)
-        # type: BasePlotlyType
         val = validator.validate_coerce(val, skip_invalid=self._skip_invalid)
 
         # Save deep copies of current and new states
@@ -3767,7 +3907,6 @@ class BasePlotlyType(object):
         # Import value
         # ------------
         validator = self._validators.get(prop)
-        # type: Tuple[BasePlotlyType]
         val = validator.validate_coerce(val, skip_invalid=self._skip_invalid)
 
         # Save deep copies of current and new states
@@ -3960,6 +4099,8 @@ class BasePlotlyType(object):
         Register callback that prints out the range extents of the xaxis and
         yaxis whenever either either of them changes.
 
+        >>> import plotly.graph_objects as go
+        >>> fig = go.Figure(go.Scatter(x=[1, 2], y=[1, 0]))
         >>> fig.layout.on_change(
         ...   lambda obj, xrange, yrange: print("%s-%s" % (xrange, yrange)),
         ...   ('xaxis', 'range'), ('yaxis', 'range'))
@@ -4317,11 +4458,7 @@ class BaseLayoutType(BaseLayoutHierarchyType):
         Custom __dir__ that handles dynamic subplot properties
         """
         # Include any active subplot values
-        if six.PY3:
-            return list(super(BaseLayoutHierarchyType, self).__dir__()) + sorted(
-                self._subplotid_props
-            )
-        else:
+        if six.PY2:
 
             def get_attrs(obj):
                 import types
@@ -4352,6 +4489,11 @@ class BaseLayoutType(BaseLayoutHierarchyType):
                 return list(attrs)
 
             return dir2(self) + sorted(self._subplotid_props)
+        else:
+
+            return list(super(BaseLayoutHierarchyType, self).__dir__()) + sorted(
+                self._subplotid_props
+            )
 
 
 class BaseTraceHierarchyType(BasePlotlyType):
@@ -4443,6 +4585,8 @@ class BaseTraceType(BaseTraceHierarchyType):
 
         Examples
         --------
+
+        >>> import plotly.graph_objects as go
         >>> from plotly.callbacks import Points, InputDeviceState
         >>> points, state = Points(), InputDeviceState()
 
@@ -4450,6 +4594,7 @@ class BaseTraceType(BaseTraceHierarchyType):
         ...     inds = points.point_inds
         ...     # Do something
 
+        >>> trace = go.Scatter(x=[1, 2], y=[3, 0])
         >>> trace.on_hover(hover_fn)
 
         Note: The creation of the `points` and `state` objects is optional,
@@ -4502,6 +4647,8 @@ class BaseTraceType(BaseTraceHierarchyType):
 
         Examples
         --------
+
+        >>> import plotly.graph_objects as go
         >>> from plotly.callbacks import Points, InputDeviceState
         >>> points, state = Points(), InputDeviceState()
 
@@ -4509,6 +4656,7 @@ class BaseTraceType(BaseTraceHierarchyType):
         ...     inds = points.point_inds
         ...     # Do something
 
+        >>> trace = go.Scatter(x=[1, 2], y=[3, 0])
         >>> trace.on_unhover(unhover_fn)
 
         Note: The creation of the `points` and `state` objects is optional,
@@ -4561,6 +4709,8 @@ class BaseTraceType(BaseTraceHierarchyType):
 
         Examples
         --------
+
+        >>> import plotly.graph_objects as go
         >>> from plotly.callbacks import Points, InputDeviceState
         >>> points, state = Points(), InputDeviceState()
 
@@ -4568,6 +4718,7 @@ class BaseTraceType(BaseTraceHierarchyType):
         ...     inds = points.point_inds
         ...     # Do something
 
+        >>> trace = go.Scatter(x=[1, 2], y=[3, 0])
         >>> trace.on_click(click_fn)
 
         Note: The creation of the `points` and `state` objects is optional,
@@ -4619,6 +4770,8 @@ class BaseTraceType(BaseTraceHierarchyType):
 
         Examples
         --------
+
+        >>> import plotly.graph_objects as go
         >>> from plotly.callbacks import Points
         >>> points = Points()
 
@@ -4626,6 +4779,7 @@ class BaseTraceType(BaseTraceHierarchyType):
         ...     inds = points.point_inds
         ...     # Do something
 
+        >>> trace = go.Scatter(x=[1, 2], y=[3, 0])
         >>> trace.on_selection(selection_fn)
 
         Note: The creation of the `points` object is optional,
@@ -4684,6 +4838,8 @@ class BaseTraceType(BaseTraceHierarchyType):
 
         Examples
         --------
+
+        >>> import plotly.graph_objects as go
         >>> from plotly.callbacks import Points
         >>> points = Points()
 
@@ -4691,6 +4847,7 @@ class BaseTraceType(BaseTraceHierarchyType):
         ...     inds = points.point_inds
         ...     # Do something
 
+        >>> trace = go.Scatter(x=[1, 2], y=[3, 0])
         >>> trace.on_deselect(deselect_fn)
 
         Note: The creation of the `points` object is optional,

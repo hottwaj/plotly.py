@@ -5,7 +5,8 @@ from collections import namedtuple, OrderedDict
 from _plotly_utils.basevalidators import ColorscaleValidator
 from .colors import qualitative, sequential
 import math
-import pandas
+import pandas as pd
+import numpy as np
 
 from plotly.subplots import (
     make_subplots,
@@ -18,7 +19,7 @@ class PxDefaults(object):
     def __init__(self):
         self.template = None
         self.width = None
-        self.height = 600
+        self.height = None
         self.color_discrete_sequence = None
         self.color_continuous_scale = None
         self.symbol_sequence = None
@@ -29,14 +30,14 @@ class PxDefaults(object):
 defaults = PxDefaults()
 del PxDefaults
 
-MAPBOX_TOKEN = ""
+MAPBOX_TOKEN = None
 
 
 def set_mapbox_access_token(token):
     """
     Arguments:
-        token: A Mapbox token to be used in `plotly_express.scatter_mapbox` and \
-        `plotly_express.line_mapbox` figures. See \
+        token: A Mapbox token to be used in `plotly.express.scatter_mapbox` and \
+        `plotly.express.line_mapbox` figures. See \
         https://docs.mapbox.com/help/how-mapbox-works/access-tokens/ for more details
     """
     global MAPBOX_TOKEN
@@ -49,7 +50,7 @@ def get_trendline_results(fig):
     the `trendline` argument set to `"ols"`).
 
     Arguments:
-        fig: the output of a `plotly_express` charting call
+        fig: the output of a `plotly.express` charting call
     Returns:
         A `pandas.DataFrame` with a column "px_fit_results" containing the `statsmodels`
         results objects, along with columns identifying the subset of the data the
@@ -137,12 +138,35 @@ def make_mapping(args, variable):
 
 
 def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
+    """Populates a dict with arguments to update trace
 
+    Parameters
+    ----------
+    args : dict
+        args to be used for the trace
+    trace_spec : NamedTuple
+        which kind of trace to be used (has constructor, marginal etc.
+        attributes)
+    g : pandas DataFrame
+        data
+    mapping_labels : dict
+        to be used for hovertemplate
+    sizeref : float
+        marker sizeref
+
+    Returns
+    -------
+    result : dict
+        dict to be used to update trace
+    fit_results : dict
+        fit information to be used for trendlines
+    """
     if "line_close" in args and args["line_close"]:
         g = g.append(g.iloc[0])
     result = trace_spec.trace_patch.copy() or {}
     fit_results = None
     hover_header = ""
+    custom_data_len = 0
     for k in trace_spec.attrs:
         v = args[k]
         v_label = get_decorated_label(args, v, k)
@@ -157,7 +181,9 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
                 )
                 and (
                     trace_spec.constructor != go.Parcats
-                    or len(args["data_frame"][name].unique()) <= 20
+                    or (v is not None and name in v)
+                    or len(args["data_frame"][name].unique())
+                    <= args["dimensions_max_cardinality"]
                 )
             ]
             result["dimensions"] = [
@@ -194,7 +220,6 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
             elif k == "trendline":
                 if v in ["ols", "lowess"] and args["x"] and args["y"] and len(g) > 1:
                     import statsmodels.api as sm
-                    import numpy as np
 
                     # sorting is bad but trace_specs with "trendline" have no other attrs
                     g2 = g.sort_values(by=args["x"])
@@ -210,10 +235,10 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
                         result["y"] = trendline[:, 1]
                         hover_header = "<b>LOWESS trendline</b><br><br>"
                     elif v == "ols":
-                        fit_results = sm.OLS(y, sm.add_constant(x)).fit()
+                        fit_results = sm.OLS(y.values, sm.add_constant(x.values)).fit()
                         result["y"] = fit_results.predict()
                         hover_header = "<b>OLS trendline</b><br>"
-                        hover_header += "%s = %f * %s + %f<br>" % (
+                        hover_header += "%s = %g * %s + %g<br>" % (
                             args["y"],
                             fit_results.params[1],
                             args["x"],
@@ -231,6 +256,9 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
                 if error_xy not in result:
                     result[error_xy] = {}
                 result[error_xy][arr] = g[v]
+            elif k == "custom_data":
+                result["customdata"] = g[v].values
+                custom_data_len = len(v)  # number of custom data columns
             elif k == "hover_name":
                 if trace_spec.constructor not in [
                     go.Histogram,
@@ -246,15 +274,47 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
                     go.Histogram2d,
                     go.Histogram2dContour,
                 ]:
-                    result["customdata"] = g[v].values
-                    for i, col in enumerate(v):
+                    for col in v:
+                        try:
+                            position = args["custom_data"].index(col)
+                        except (ValueError, AttributeError, KeyError):
+                            position = custom_data_len
+                            custom_data_len += 1
+                            if "customdata" in result:
+                                result["customdata"] = np.hstack(
+                                    (result["customdata"], g[col].values[:, None])
+                                )
+                            else:
+                                result["customdata"] = g[col].values[:, None]
                         v_label_col = get_decorated_label(args, col, None)
-                        mapping_labels[v_label_col] = "%%{customdata[%d]}" % i
+                        mapping_labels[v_label_col] = "%%{customdata[%d]}" % (position)
             elif k == "color":
-                if trace_spec.constructor == go.Choropleth:
+                if trace_spec.constructor in [go.Choropleth, go.Choroplethmapbox]:
                     result["z"] = g[v]
                     result["coloraxis"] = "coloraxis1"
                     mapping_labels[v_label] = "%{z}"
+                elif trace_spec.constructor in [
+                    go.Sunburst,
+                    go.Treemap,
+                    go.Pie,
+                    go.Funnelarea,
+                ]:
+                    if "marker" not in result:
+                        result["marker"] = dict()
+
+                    if args.get("color_is_continuous"):
+                        result["marker"]["colors"] = g[v]
+                        result["marker"]["coloraxis"] = "coloraxis1"
+                        mapping_labels[v_label] = "%{color}"
+                    else:
+                        result["marker"]["colors"] = []
+                        mapping = {}
+                        for cat in g[v]:
+                            if mapping.get(cat) is None:
+                                mapping[cat] = args["color_discrete_sequence"][
+                                    len(mapping) % len(args["color_discrete_sequence"])
+                                ]
+                            result["marker"]["colors"].append(mapping[cat])
                 else:
                     colorable = "marker"
                     if trace_spec.constructor in [go.Parcats, go.Parcoords]:
@@ -269,11 +329,38 @@ def make_trace_kwargs(args, trace_spec, g, mapping_labels, sizeref):
             elif k == "locations":
                 result[k] = g[v]
                 mapping_labels[v_label] = "%{location}"
+            elif k == "values":
+                result[k] = g[v]
+                _label = "value" if v_label == "values" else v_label
+                mapping_labels[_label] = "%{value}"
+            elif k == "parents":
+                result[k] = g[v]
+                _label = "parent" if v_label == "parents" else v_label
+                mapping_labels[_label] = "%{parent}"
+            elif k == "ids":
+                result[k] = g[v]
+                _label = "id" if v_label == "ids" else v_label
+                mapping_labels[_label] = "%{id}"
+            elif k == "names":
+                if trace_spec.constructor in [
+                    go.Sunburst,
+                    go.Treemap,
+                    go.Pie,
+                    go.Funnelarea,
+                ]:
+                    result["labels"] = g[v]
+                    _label = "label" if v_label == "names" else v_label
+                    mapping_labels[_label] = "%{label}"
+                else:
+                    result[k] = g[v]
             else:
                 if v:
                     result[k] = g[v]
                 mapping_labels[v_label] = "%%{%s}" % k
-    if trace_spec.constructor not in [go.Parcoords, go.Parcats]:
+    if trace_spec.constructor not in [
+        go.Parcoords,
+        go.Parcats,
+    ]:
         hover_lines = [k + "=" + v for k, v in mapping_labels.items()]
         result["hovertemplate"] = hover_header + "<br>".join(hover_lines)
     return result, fit_results
@@ -295,6 +382,8 @@ def configure_axes(args, constructor, fig, orders):
         go.Scatterpolargl: configure_polar_axes,
         go.Barpolar: configure_polar_axes,
         go.Scattermapbox: configure_mapbox,
+        go.Choroplethmapbox: configure_mapbox,
+        go.Densitymapbox: configure_mapbox,
         go.Scattergeo: configure_geo,
         go.Choropleth: configure_geo,
     }
@@ -339,25 +428,33 @@ def configure_cartesian_marginal_axes(args, fig, orders):
 
     # Configure axis ticks on marginal subplots
     if args["marginal_x"]:
-        fig.update_yaxes(
-            showticklabels=False, showgrid=args["marginal_x"] == "histogram", row=nrows
-        )
-        fig.update_xaxes(showgrid=True, row=nrows)
+        fig.update_yaxes(showticklabels=False, showline=False, ticks="", row=nrows)
+        if args["template"].layout.yaxis.showgrid is None:
+            fig.update_yaxes(showgrid=args["marginal_x"] == "histogram", row=nrows)
+        if args["template"].layout.xaxis.showgrid is None:
+            fig.update_xaxes(showgrid=True, row=nrows)
 
     if args["marginal_y"]:
-        fig.update_xaxes(
-            showticklabels=False, showgrid=args["marginal_y"] == "histogram", col=ncols
-        )
-        fig.update_yaxes(showgrid=True, col=ncols)
+        fig.update_xaxes(showticklabels=False, showline=False, ticks="", col=ncols)
+        if args["template"].layout.xaxis.showgrid is None:
+            fig.update_xaxes(showgrid=args["marginal_y"] == "histogram", col=ncols)
+        if args["template"].layout.yaxis.showgrid is None:
+            fig.update_yaxes(showgrid=True, col=ncols)
 
     # Add axis titles to non-marginal subplots
     y_title = get_decorated_label(args, args["y"], "y")
-    for row in range(1, nrows):
-        fig.update_yaxes(title_text=y_title, row=row, col=1)
+    if args["marginal_x"]:
+        fig.update_yaxes(title_text=y_title, row=1, col=1)
+    else:
+        for row in range(1, nrows + 1):
+            fig.update_yaxes(title_text=y_title, row=row, col=1)
 
     x_title = get_decorated_label(args, args["x"], "x")
-    for col in range(1, ncols):
-        fig.update_xaxes(title_text=x_title, row=1, col=col)
+    if args["marginal_y"]:
+        fig.update_xaxes(title_text=x_title, row=1, col=1)
+    else:
+        for col in range(1, ncols + 1):
+            fig.update_xaxes(title_text=x_title, row=1, col=col)
 
     # Configure axis type across all x-axes
     if "log_x" in args and args["log_x"]:
@@ -409,13 +506,11 @@ def configure_cartesian_axes(args, fig, orders):
 
 
 def configure_ternary_axes(args, fig, orders):
-    fig.update(
-        layout=dict(
-            ternary=dict(
-                aaxis=dict(title=get_label(args, args["a"])),
-                baxis=dict(title=get_label(args, args["b"])),
-                caxis=dict(title=get_label(args, args["c"])),
-            )
+    fig.update_layout(
+        ternary=dict(
+            aaxis=dict(title=get_label(args, args["a"])),
+            baxis=dict(title=get_label(args, args["b"])),
+            caxis=dict(title=get_label(args, args["c"])),
         )
     )
 
@@ -441,6 +536,9 @@ def configure_polar_axes(args, fig, orders):
     else:
         if args["range_r"]:
             radialaxis["range"] = args["range_r"]
+
+    if args["range_theta"]:
+        layout["polar"]["sector"] = args["range_theta"]
     fig.update(layout=layout)
 
 
@@ -469,28 +567,28 @@ def configure_3d_axes(args, fig, orders):
 
 
 def configure_mapbox(args, fig, orders):
-    fig.update(
-        layout=dict(
-            mapbox=dict(
-                accesstoken=MAPBOX_TOKEN,
-                center=dict(
-                    lat=args["data_frame"][args["lat"]].mean(),
-                    lon=args["data_frame"][args["lon"]].mean(),
-                ),
-                zoom=args["zoom"],
-            )
+    center = args["center"]
+    if not center and "lat" in args and "lon" in args:
+        center = dict(
+            lat=args["data_frame"][args["lat"]].mean(),
+            lon=args["data_frame"][args["lon"]].mean(),
+        )
+    fig.update_layout(
+        mapbox=dict(
+            accesstoken=MAPBOX_TOKEN,
+            center=center,
+            zoom=args["zoom"],
+            style=args["mapbox_style"],
         )
     )
 
 
 def configure_geo(args, fig, orders):
-    fig.update(
-        layout=dict(
-            geo=dict(
-                center=args["center"],
-                scope=args["scope"],
-                projection=dict(type=args["projection"]),
-            )
+    fig.update_layout(
+        geo=dict(
+            center=args["center"],
+            scope=args["scope"],
+            projection=dict(type=args["projection"]),
         )
     )
 
@@ -630,6 +728,7 @@ def one_group(x):
 
 def apply_default_cascade(args):
     # first we apply px.defaults to unspecified args
+
     for param in (
         ["color_discrete_sequence", "color_continuous_scale"]
         + ["symbol_sequence", "line_dash_sequence", "template"]
@@ -645,55 +744,47 @@ def apply_default_cascade(args):
         else:
             args["template"] = "plotly"
 
-    # retrieve the actual template if we were given a name
     try:
-        template = pio.templates[args["template"]]
+        # retrieve the actual template if we were given a name
+        args["template"] = pio.templates[args["template"]]
     except Exception:
-        template = args["template"]
+        # otherwise try to build a real template
+        args["template"] = go.layout.Template(args["template"])
 
     # if colors not set explicitly or in px.defaults, defer to a template
     # if the template doesn't have one, we set some final fallback defaults
     if "color_continuous_scale" in args:
-        if args["color_continuous_scale"] is None:
-            try:
-                args["color_continuous_scale"] = [
-                    x[1] for x in template.layout.colorscale.sequential
-                ]
-            except (AttributeError, TypeError):
-                pass
+        if (
+            args["color_continuous_scale"] is None
+            and args["template"].layout.colorscale.sequential
+        ):
+            args["color_continuous_scale"] = [
+                x[1] for x in args["template"].layout.colorscale.sequential
+            ]
         if args["color_continuous_scale"] is None:
             args["color_continuous_scale"] = sequential.Viridis
 
     if "color_discrete_sequence" in args:
-        if args["color_discrete_sequence"] is None:
-            try:
-                args["color_discrete_sequence"] = template.layout.colorway
-            except (AttributeError, TypeError):
-                pass
+        if args["color_discrete_sequence"] is None and args["template"].layout.colorway:
+            args["color_discrete_sequence"] = args["template"].layout.colorway
         if args["color_discrete_sequence"] is None:
             args["color_discrete_sequence"] = qualitative.D3
 
     # if symbol_sequence/line_dash_sequence not set explicitly or in px.defaults,
     # see if we can defer to template. If not, set reasonable defaults
     if "symbol_sequence" in args:
-        if args["symbol_sequence"] is None:
-            try:
-                args["symbol_sequence"] = [
-                    scatter.marker.symbol for scatter in template.data.scatter
-                ]
-            except (AttributeError, TypeError):
-                pass
+        if args["symbol_sequence"] is None and args["template"].data.scatter:
+            args["symbol_sequence"] = [
+                scatter.marker.symbol for scatter in args["template"].data.scatter
+            ]
         if not args["symbol_sequence"] or not any(args["symbol_sequence"]):
             args["symbol_sequence"] = ["circle", "diamond", "square", "x", "cross"]
 
     if "line_dash_sequence" in args:
-        if args["line_dash_sequence"] is None:
-            try:
-                args["line_dash_sequence"] = [
-                    scatter.line.dash for scatter in template.data.scatter
-                ]
-            except (AttributeError, TypeError):
-                pass
+        if args["line_dash_sequence"] is None and args["template"].data.scatter:
+            args["line_dash_sequence"] = [
+                scatter.line.dash for scatter in args["template"].data.scatter
+            ]
         if not args["line_dash_sequence"] or not any(args["line_dash_sequence"]):
             args["line_dash_sequence"] = [
                 "solid",
@@ -705,45 +796,381 @@ def apply_default_cascade(args):
             ]
 
     # If both marginals and faceting are specified, faceting wins
-    if args.get("facet_col", None) and args.get("marginal_y", None):
+    if args.get("facet_col", None) is not None and args.get("marginal_y", None):
         args["marginal_y"] = None
 
-    if args.get("facet_row", None) and args.get("marginal_x", None):
+    if args.get("facet_row", None) is not None and args.get("marginal_x", None):
         args["marginal_x"] = None
+
+
+def _check_name_not_reserved(field_name, reserved_names):
+    if field_name not in reserved_names:
+        return field_name
+    else:
+        raise NameError(
+            "A name conflict was encountered for argument %s. "
+            "A column with name %s is already used." % (field_name, field_name)
+        )
+
+
+def _get_reserved_col_names(args, attrables, array_attrables):
+    """
+    This function builds a list of columns of the data_frame argument used
+    as arguments, either as str/int arguments or given as columns
+    (pandas series type).
+    """
+    df = args["data_frame"]
+    reserved_names = set()
+    for field in args:
+        if field not in attrables:
+            continue
+        names = args[field] if field in array_attrables else [args[field]]
+        if names is None:
+            continue
+        for arg in names:
+            if arg is None:
+                continue
+            elif isinstance(arg, str):  # no need to add ints since kw arg are not ints
+                reserved_names.add(arg)
+            elif isinstance(arg, pd.Series):
+                arg_name = arg.name
+                if arg_name and hasattr(df, arg_name):
+                    in_df = arg is df[arg_name]
+                    if in_df:
+                        reserved_names.add(arg_name)
+
+    return reserved_names
+
+
+def build_dataframe(args, attrables, array_attrables):
+    """
+    Constructs a dataframe and modifies `args` in-place.
+
+    The argument values in `args` can be either strings corresponding to
+    existing columns of a dataframe, or data arrays (lists, numpy arrays,
+    pandas columns, series).
+
+    Parameters
+    ----------
+    args : OrderedDict
+        arguments passed to the px function and subsequently modified
+    attrables : list
+        list of keys into `args`, all of whose corresponding values are
+        converted into columns of a dataframe.
+    array_attrables : list
+        argument names corresponding to iterables, such as `hover_data`, ...
+    """
+    for field in args:
+        if field in array_attrables and args[field] is not None:
+            args[field] = (
+                dict(args[field])
+                if isinstance(args[field], dict)
+                else list(args[field])
+            )
+    # Cast data_frame argument to DataFrame (it could be a numpy array, dict etc.)
+    df_provided = args["data_frame"] is not None
+    if df_provided and not isinstance(args["data_frame"], pd.DataFrame):
+        args["data_frame"] = pd.DataFrame(args["data_frame"])
+    df_input = args["data_frame"]
+
+    # We start from an empty DataFrame
+    df_output = pd.DataFrame()
+
+    # Initialize set of column names
+    # These are reserved names
+    if df_provided:
+        reserved_names = _get_reserved_col_names(args, attrables, array_attrables)
+    else:
+        reserved_names = set()
+
+    # Case of functions with a "dimensions" kw: scatter_matrix, parcats, parcoords
+    if "dimensions" in args and args["dimensions"] is None:
+        if not df_provided:
+            raise ValueError(
+                "No data were provided. Please provide data either with the `data_frame` or with the `dimensions` argument."
+            )
+        else:
+            df_output[df_input.columns] = df_input[df_input.columns]
+
+    # Loop over possible arguments
+    for field_name in attrables:
+        # Massaging variables
+        argument_list = (
+            [args.get(field_name)]
+            if field_name not in array_attrables
+            else args.get(field_name)
+        )
+        # argument not specified, continue
+        if argument_list is None or argument_list is [None]:
+            continue
+        # Argument name: field_name if the argument is not a list
+        # Else we give names like ["hover_data_0, hover_data_1"] etc.
+        field_list = (
+            [field_name]
+            if field_name not in array_attrables
+            else [field_name + "_" + str(i) for i in range(len(argument_list))]
+        )
+        # argument_list and field_list ready, iterate over them
+        # Core of the loop starts here
+        for i, (argument, field) in enumerate(zip(argument_list, field_list)):
+            length = len(df_output)
+            if argument is None:
+                continue
+            # Case of multiindex
+            if isinstance(argument, pd.MultiIndex):
+                raise TypeError(
+                    "Argument '%s' is a pandas MultiIndex. "
+                    "pandas MultiIndex is not supported by plotly express "
+                    "at the moment." % field
+                )
+            # ----------------- argument is a col name ----------------------
+            if isinstance(argument, str) or isinstance(
+                argument, int
+            ):  # just a column name given as str or int
+                if not df_provided:
+                    raise ValueError(
+                        "String or int arguments are only possible when a "
+                        "DataFrame or an array is provided in the `data_frame` "
+                        "argument. No DataFrame was provided, but argument "
+                        "'%s' is of type str or int." % field
+                    )
+                # Check validity of column name
+                if argument not in df_input.columns:
+                    err_msg = (
+                        "Value of '%s' is not the name of a column in 'data_frame'. "
+                        "Expected one of %s but received: %s"
+                        % (field, str(list(df_input.columns)), argument)
+                    )
+                    if argument == "index":
+                        err_msg += (
+                            "\n To use the index, pass it in directly as `df.index`."
+                        )
+                    raise ValueError(err_msg)
+                if length and len(df_input[argument]) != length:
+                    raise ValueError(
+                        "All arguments should have the same length. "
+                        "The length of column argument `df[%s]` is %d, whereas the "
+                        "length of previous arguments %s is %d"
+                        % (
+                            field,
+                            len(df_input[argument]),
+                            str(list(df_output.columns)),
+                            length,
+                        )
+                    )
+                col_name = str(argument)
+                df_output[col_name] = df_input[argument].values
+            # ----------------- argument is a column / array / list.... -------
+            else:
+                is_index = isinstance(argument, pd.RangeIndex)
+                # First pandas
+                # pandas series have a name but it's None
+                if (
+                    hasattr(argument, "name") and argument.name is not None
+                ) or is_index:
+                    col_name = argument.name  # pandas df
+                    if col_name is None and is_index:
+                        col_name = "index"
+                    if not df_provided:
+                        col_name = field
+                    else:
+                        if is_index:
+                            keep_name = df_provided and argument is df_input.index
+                        else:
+                            keep_name = (
+                                col_name in df_input and argument is df_input[col_name]
+                            )
+                        col_name = (
+                            col_name
+                            if keep_name
+                            else _check_name_not_reserved(field, reserved_names)
+                        )
+                else:  # numpy array, list...
+                    col_name = _check_name_not_reserved(field, reserved_names)
+                if length and len(argument) != length:
+                    raise ValueError(
+                        "All arguments should have the same length. "
+                        "The length of argument `%s` is %d, whereas the "
+                        "length of previous arguments %s is %d"
+                        % (field, len(argument), str(list(df_output.columns)), length)
+                    )
+                if hasattr(argument, "values"):
+                    df_output[str(col_name)] = argument.values
+                else:
+                    df_output[str(col_name)] = np.array(argument)
+
+            # Finally, update argument with column name now that column exists
+            if field_name not in array_attrables:
+                args[field_name] = str(col_name)
+            else:
+                args[field_name][i] = str(col_name)
+
+    args["data_frame"] = df_output
+    return args
+
+
+def _check_dataframe_all_leaves(df):
+    df_sorted = df.sort_values(by=list(df.columns))
+    null_mask = df_sorted.isnull()
+    null_indices = np.nonzero(null_mask.any(axis=1).values)[0]
+    for null_row_index in null_indices:
+        row = null_mask.iloc[null_row_index]
+        indices = np.nonzero(row.values)[0]
+        if not row[indices[0] :].all():
+            raise ValueError(
+                "None entries cannot have not-None children",
+                df_sorted.iloc[null_row_index],
+            )
+    df_sorted[null_mask] = ""
+    row_strings = list(df_sorted.apply(lambda x: "".join(x), axis=1))
+    for i, row in enumerate(row_strings[:-1]):
+        if row_strings[i + 1] in row and (i + 1) in null_indices:
+            raise ValueError(
+                "Non-leaves rows are not permitted in the dataframe \n",
+                df_sorted.iloc[i + 1],
+                "is not a leaf.",
+            )
+
+
+def process_dataframe_hierarchy(args):
+    """
+    Build dataframe for sunburst or treemap when the path argument is provided.
+    """
+    df = args["data_frame"]
+    path = args["path"][::-1]
+    _check_dataframe_all_leaves(df[path[::-1]])
+    discrete_color = False
+
+    if args["color"] and args["color"] in path:
+        series_to_copy = df[args["color"]]
+        args["color"] = str(args["color"]) + "additional_col_for_px"
+        df[args["color"]] = series_to_copy
+    if args["hover_data"]:
+        for col_name in args["hover_data"]:
+            if col_name == args["color"]:
+                series_to_copy = df[col_name]
+                new_col_name = str(args["color"]) + "additional_col_for_hover"
+                df[new_col_name] = series_to_copy
+                args["color"] = new_col_name
+            elif col_name in path:
+                series_to_copy = df[col_name]
+                new_col_name = col_name + "additional_col_for_hover"
+                path = [new_col_name if x == col_name else x for x in path]
+                df[new_col_name] = series_to_copy
+    # ------------ Define aggregation functions --------------------------------
+    def aggfunc_discrete(x):
+        uniques = x.unique()
+        if len(uniques) == 1:
+            return uniques[0]
+        else:
+            return "(?)"
+
+    agg_f = {}
+    aggfunc_color = None
+    if args["values"]:
+        try:
+            df[args["values"]] = pd.to_numeric(df[args["values"]])
+        except ValueError:
+            raise ValueError(
+                "Column `%s` of `df` could not be converted to a numerical data type."
+                % args["values"]
+            )
+
+        if args["color"]:
+            if args["color"] == args["values"]:
+                aggfunc_color = "sum"
+        count_colname = args["values"]
+    else:
+        # we need a count column for the first groupby and the weighted mean of color
+        # trick to be sure the col name is unused: take the sum of existing names
+        count_colname = (
+            "count"
+            if "count" not in df.columns
+            else "".join([str(el) for el in list(df.columns)])
+        )
+        # we can modify df because it's a copy of the px argument
+        df[count_colname] = 1
+        args["values"] = count_colname
+    agg_f[count_colname] = "sum"
+
+    if args["color"]:
+        if df[args["color"]].dtype.kind not in "bifc":
+            aggfunc_color = aggfunc_discrete
+            discrete_color = True
+        elif not aggfunc_color:
+
+            def aggfunc_continuous(x):
+                return np.average(x, weights=df.loc[x.index, count_colname])
+
+            aggfunc_color = aggfunc_continuous
+        agg_f[args["color"]] = aggfunc_color
+
+    #  Other columns (for color, hover_data, custom_data etc.)
+    cols = list(set(df.columns).difference(path))
+    for col in cols:  # for hover_data, custom_data etc.
+        if col not in agg_f:
+            agg_f[col] = aggfunc_discrete
+    # ----------------------------------------------------------------------------
+
+    df_all_trees = pd.DataFrame(columns=["labels", "parent", "id"] + cols)
+    #  Set column type here (useful for continuous vs discrete colorscale)
+    for col in cols:
+        df_all_trees[col] = df_all_trees[col].astype(df[col].dtype)
+    for i, level in enumerate(path):
+        df_tree = pd.DataFrame(columns=df_all_trees.columns)
+        dfg = df.groupby(path[i:]).agg(agg_f)
+        dfg = dfg.reset_index()
+        # Path label massaging
+        df_tree["labels"] = dfg[level].copy().astype(str)
+        df_tree["parent"] = ""
+        df_tree["id"] = dfg[level].copy().astype(str)
+        if i < len(path) - 1:
+            j = i + 1
+            while j < len(path):
+                df_tree["parent"] = (
+                    dfg[path[j]].copy().astype(str) + "/" + df_tree["parent"]
+                )
+                df_tree["id"] = dfg[path[j]].copy().astype(str) + "/" + df_tree["id"]
+                j += 1
+
+        df_tree["parent"] = df_tree["parent"].str.rstrip("/")
+        if cols:
+            df_tree[cols] = dfg[cols]
+        df_all_trees = df_all_trees.append(df_tree, ignore_index=True)
+
+    if args["color"] and discrete_color:
+        df_all_trees = df_all_trees.sort_values(by=args["color"])
+
+    # Now modify arguments
+    args["data_frame"] = df_all_trees
+    args["path"] = None
+    args["ids"] = "id"
+    args["names"] = "labels"
+    args["parents"] = "parent"
+    return args
 
 
 def infer_config(args, constructor, trace_patch):
     # Declare all supported attributes, across all plot types
     attrables = (
-        ["x", "y", "z", "a", "b", "c", "r", "theta", "size"]
-        + ["dimensions", "hover_name", "hover_data", "text", "error_x", "error_x_minus"]
+        ["x", "y", "z", "a", "b", "c", "r", "theta", "size", "dimensions"]
+        + ["custom_data", "hover_name", "hover_data", "text"]
+        + ["names", "values", "parents", "ids"]
+        + ["error_x", "error_x_minus"]
         + ["error_y", "error_y_minus", "error_z", "error_z_minus"]
-        + ["lat", "lon", "locations", "animation_group"]
+        + ["lat", "lon", "locations", "animation_group", "path"]
     )
-    array_attrables = ["dimensions", "hover_data"]
+    array_attrables = ["dimensions", "custom_data", "hover_data", "path"]
     group_attrables = ["animation_frame", "facet_row", "facet_col", "line_group"]
+    all_attrables = attrables + group_attrables + ["color"]
+    group_attrs = ["symbol", "line_dash"]
+    for group_attr in group_attrs:
+        if group_attr in args:
+            all_attrables += [group_attr]
 
-    # Validate that the strings provided as attribute values reference columns
-    # in the provided data_frame
-    df_columns = args["data_frame"].columns
-
-    for attr in attrables + group_attrables + ["color"]:
-        if attr in args and args[attr] is not None:
-            maybe_col_list = [args[attr]] if attr not in array_attrables else args[attr]
-            for maybe_col in maybe_col_list:
-                try:
-                    in_cols = maybe_col in df_columns
-                except TypeError:
-                    in_cols = False
-                if not in_cols:
-                    value_str = (
-                        "Element of value" if attr in array_attrables else "Value"
-                    )
-                    raise ValueError(
-                        "%s of '%s' is not the name of a column in 'data_frame'. "
-                        "Expected one of %s but received: %s"
-                        % (value_str, attr, str(list(df_columns)), str(maybe_col))
-                    )
+    args = build_dataframe(args, all_attrables, array_attrables)
+    if constructor in [go.Treemap, go.Sunburst] and args["path"] is not None:
+        args = process_dataframe_hierarchy(args)
 
     attrs = [k for k in attrables if k in args]
     grouped_attrs = []
@@ -764,14 +1191,34 @@ def infer_config(args, constructor, trace_patch):
                     and args["data_frame"][args["color"]].dtype.kind in "bifc"
                 ):
                     attrs.append("color")
+                    args["color_is_continuous"] = True
+                elif constructor in [go.Sunburst, go.Treemap]:
+                    attrs.append("color")
+                    args["color_is_continuous"] = False
                 else:
                     grouped_attrs.append("marker.color")
         elif "line_group" in args or constructor == go.Histogram2dContour:
             grouped_attrs.append("line.color")
+        elif constructor in [go.Pie, go.Funnelarea]:
+            attrs.append("color")
+            if args["color"]:
+                if args["hover_data"] is None:
+                    args["hover_data"] = []
+                args["hover_data"].append(args["color"])
         else:
             grouped_attrs.append("marker.color")
 
-        show_colorbar = bool("color" in attrs and args["color"])
+        show_colorbar = bool(
+            "color" in attrs
+            and args["color"]
+            and constructor not in [go.Pie, go.Funnelarea]
+            and (
+                constructor not in [go.Treemap, go.Sunburst]
+                or args.get("color_is_continuous")
+            )
+        )
+    else:
+        show_colorbar = False
 
     # Compute line_dash grouping attribute
     if "line_dash" in args:
@@ -784,7 +1231,7 @@ def infer_config(args, constructor, trace_patch):
     # Compute final trace patch
     trace_patch = trace_patch.copy()
 
-    if constructor == go.Histogram2d:
+    if constructor in [go.Histogram2d, go.Densitymapbox]:
         show_colorbar = True
         trace_patch["coloraxis"] = "coloraxis1"
 
@@ -811,6 +1258,13 @@ def infer_config(args, constructor, trace_patch):
         args[position] = args["marginal"]
         args[other_position] = None
 
+    if (
+        args.get("marginal_x", None) is not None
+        or args.get("marginal_y", None) is not None
+        or args.get("facet_row", None) is not None
+    ):
+        args["facet_col_wrap"] = 0
+
     # Compute applicable grouping attributes
     for k in group_attrables:
         if k in args:
@@ -821,17 +1275,25 @@ def infer_config(args, constructor, trace_patch):
 
     # Create trace specs
     trace_specs = make_trace_spec(args, constructor, attrs, trace_patch)
-    return trace_specs, grouped_mappings, sizeref, show_colorbar
+    return args, trace_specs, grouped_mappings, sizeref, show_colorbar
 
 
 def get_orderings(args, grouper, grouped):
     """
     `orders` is the user-supplied ordering (with the remaining data-frame-supplied
-    ordering appended if the column is used for grouping)
+    ordering appended if the column is used for grouping). It includes anything the user
+    gave, for any variable, including values not present in the dataset. It is used
+    downstream to set e.g. `categoryarray` for cartesian axes
+
     `group_names` is the set of groups, ordered by the order above
+
+    `group_values` is a subset of `orders` in both keys and values. It contains a key
+     for every grouped mapping and its values are the sorted *data* values for these
+     mappings.
     """
     orders = {} if "category_orders" not in args else args["category_orders"].copy()
     group_names = []
+    group_values = {}
     for group_name in grouped.groups:
         if len(grouper) == 1:
             group_name = (group_name,)
@@ -845,6 +1307,7 @@ def get_orderings(args, grouper, grouped):
                     for val in uniques:
                         if val not in orders[col]:
                             orders[col].append(val)
+                group_values[col] = sorted(uniques, key=orders[col].index)
 
     for i, col in reversed(list(enumerate(grouper))):
         if col != one_group:
@@ -853,22 +1316,36 @@ def get_orderings(args, grouper, grouped):
                 key=lambda g: orders[col].index(g[i]) if g[i] in orders[col] else -1,
             )
 
-    return orders, group_names
+    return orders, group_names, group_values
 
 
 def make_figure(args, constructor, trace_patch={}, layout_patch={}):
     apply_default_cascade(args)
 
-    trace_specs, grouped_mappings, sizeref, show_colorbar = infer_config(
+    args, trace_specs, grouped_mappings, sizeref, show_colorbar = infer_config(
         args, constructor, trace_patch
     )
     grouper = [x.grouper or one_group for x in grouped_mappings] or [one_group]
     grouped = args["data_frame"].groupby(grouper, sort=False)
 
-    orders, sorted_group_names = get_orderings(args, grouper, grouped)
+    orders, sorted_group_names, sorted_group_values = get_orderings(
+        args, grouper, grouped
+    )
 
-    has_marginal_x = bool(args.get("marginal_x", False))
-    has_marginal_y = bool(args.get("marginal_y", False))
+    col_labels = []
+    row_labels = []
+
+    for m in grouped_mappings:
+        if m.grouper:
+            if m.facet == "col":
+                prefix = get_label(args, args["facet_col"]) + "="
+                col_labels = [prefix + str(s) for s in sorted_group_values[m.grouper]]
+            if m.facet == "row":
+                prefix = get_label(args, args["facet_row"]) + "="
+                row_labels = [prefix + str(s) for s in sorted_group_values[m.grouper]]
+            for val in sorted_group_values[m.grouper]:
+                if val not in m.val_map:
+                    m.val_map[val] = m.sequence[len(m.val_map) % len(m.sequence)]
 
     subplot_type = _subplot_type_for_trace_type(constructor().type)
 
@@ -876,6 +1353,7 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
     frames = OrderedDict()
     trendline_rows = []
     nrows = ncols = 1
+    trace_name_labels = None
     for group_name in sorted_group_names:
         group = grouped.get_group(group_name if len(group_name) > 1 else group_name[0])
         mapping_labels = OrderedDict()
@@ -889,7 +1367,7 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
                     trace_name_labels[key] = str(val)
                 if m.variable == "animation_frame":
                     frame_name = val
-        trace_name = ", ".join(k + "=" + v for k, v in trace_name_labels.items())
+        trace_name = ", ".join(trace_name_labels.values())
         if frame_name not in trace_names_by_frame:
             trace_names_by_frame[frame_name] = set()
         trace_names = trace_names_by_frame[frame_name]
@@ -910,12 +1388,17 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
                         if constructor_to_use == go.Scatter
                         else go.Scatterpolargl
                     )
+            # Create the trace
             trace = constructor_to_use(name=trace_name)
             if trace_spec.constructor not in [
                 go.Parcats,
                 go.Parcoords,
                 go.Choropleth,
+                go.Choroplethmapbox,
+                go.Densitymapbox,
                 go.Histogram2d,
+                go.Sunburst,
+                go.Treemap,
             ]:
                 trace.update(
                     legendgroup=trace_name,
@@ -936,8 +1419,9 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
                 if val not in m.val_map:
                     m.val_map[val] = m.sequence[len(m.val_map) % len(m.sequence)]
                 try:
-                    m.updater(trace, m.val_map[val])
+                    m.updater(trace, m.val_map[val])  # covers most cases
                 except ValueError:
+                    # this catches some odd cases like marginals
                     if (
                         trace_spec != trace_specs[0]
                         and trace_spec.constructor in [go.Violin, go.Box, go.Histogram]
@@ -950,32 +1434,47 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
                         and m.variable == "color"
                     ):
                         trace.update(marker=dict(color=m.val_map[val]))
+                    elif (
+                        trace_spec.constructor in [go.Choropleth, go.Choroplethmapbox]
+                        and m.variable == "color"
+                    ):
+                        trace.update(
+                            z=[1] * len(group),
+                            colorscale=[m.val_map[val]] * 2,
+                            showscale=False,
+                            showlegend=True,
+                        )
                     else:
                         raise
 
                 # Find row for trace, handling facet_row and marginal_x
                 if m.facet == "row":
                     row = m.val_map[val]
-                    trace._subplot_row_val = val
                 else:
-                    if trace_spec.marginal == "x":
+                    if (
+                        bool(args.get("marginal_x", False))
+                        and trace_spec.marginal != "x"
+                    ):
                         row = 2
                     else:
                         row = 1
 
-                nrows = max(nrows, row)
-                if row > 1:
-                    trace._subplot_row = row
-
+                facet_col_wrap = args.get("facet_col_wrap", 0)
                 # Find col for trace, handling facet_col and marginal_y
                 if m.facet == "col":
                     col = m.val_map[val]
-                    trace._subplot_col_val = val
+                    if facet_col_wrap:  # assumes no facet_row, no marginals
+                        row = 1 + ((col - 1) // facet_col_wrap)
+                        col = 1 + ((col - 1) % facet_col_wrap)
                 else:
                     if trace_spec.marginal == "y":
                         col = 2
                     else:
                         col = 1
+
+                nrows = max(nrows, row)
+                if row > 1:
+                    trace._subplot_row = row
 
                 ncols = max(ncols, col)
                 if col > 1:
@@ -1004,9 +1503,8 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
         )
     layout_patch = layout_patch.copy()
     if show_colorbar:
-        colorvar = "z" if constructor == go.Histogram2d else "color"
+        colorvar = "z" if constructor in [go.Histogram2d, go.Densitymapbox] else "color"
         range_color = args["range_color"] or [None, None]
-        d = len(args["color_continuous_scale"]) - 1
 
         colorscale_validator = ColorscaleValidator("colorscale", "make_figure")
         layout_patch["coloraxis1"] = dict(
@@ -1018,17 +1516,23 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
             cmax=range_color[1],
             colorbar=dict(title=get_decorated_label(args, args[colorvar], colorvar)),
         )
-    for v in ["title", "height", "width", "template"]:
+    for v in ["title", "height", "width"]:
         if args[v]:
             layout_patch[v] = args[v]
-    layout_patch["legend"] = {"tracegroupgap": 0}
-    if "title" not in layout_patch:
+    layout_patch["legend"] = dict(tracegroupgap=0)
+    if trace_name_labels:
+        layout_patch["legend"]["title"] = ", ".join(trace_name_labels)
+    if "title" not in layout_patch and args["template"].layout.margin.t is None:
         layout_patch["margin"] = {"t": 60}
-    if "size" in args and args["size"]:
+    if (
+        "size" in args
+        and args["size"]
+        and args["template"].layout.legend.itemsizing is None
+    ):
         layout_patch["legend"]["itemsizing"] = "constant"
 
     fig = init_figure(
-        args, subplot_type, frame_list, ncols, nrows, has_marginal_x, has_marginal_y
+        args, subplot_type, frame_list, nrows, ncols, col_labels, row_labels
     )
 
     # Position traces in subplots
@@ -1039,45 +1543,39 @@ def make_figure(args, constructor, trace_patch={}, layout_patch={}):
                 continue
 
             _set_trace_grid_reference(
-                trace, fig.layout, fig._grid_ref, trace._subplot_row, trace._subplot_col
+                trace,
+                fig.layout,
+                fig._grid_ref,
+                nrows - trace._subplot_row + 1,
+                trace._subplot_col,
             )
 
     # Add traces, layout and frames to figure
     fig.add_traces(frame_list[0]["data"] if len(frame_list) > 0 else [])
     fig.layout.update(layout_patch)
+    if "template" in args and args["template"] is not None:
+        fig.update_layout(template=args["template"], overwrite=True)
     fig.frames = frame_list if len(frames) > 1 else []
 
-    fig._px_trendlines = pandas.DataFrame(trendline_rows)
+    fig._px_trendlines = pd.DataFrame(trendline_rows)
 
     configure_axes(args, constructor, fig, orders)
     configure_animation_controls(args, constructor, fig)
     return fig
 
 
-def init_figure(
-    args, subplot_type, frame_list, ncols, nrows, has_marginal_x, has_marginal_y
-):
+def init_figure(args, subplot_type, frame_list, nrows, ncols, col_labels, row_labels):
     # Build subplot specs
     specs = [[{}] * ncols for _ in range(nrows)]
-    column_titles = [None] * ncols
-    row_titles = [None] * nrows
     for frame in frame_list:
         for trace in frame["data"]:
-            row0 = nrows - trace._subplot_row
+            row0 = trace._subplot_row - 1
             col0 = trace._subplot_col - 1
-
             if isinstance(trace, go.Splom):
                 # Splom not compatible with make_subplots, treat as domain
                 specs[row0][col0] = {"type": "domain"}
             else:
                 specs[row0][col0] = {"type": trace.type}
-            if args.get("facet_row", None) and hasattr(trace, "_subplot_row_val"):
-                row_titles[row0] = args["facet_row"] + "=" + str(trace._subplot_row_val)
-
-            if args.get("facet_col", None) and hasattr(trace, "_subplot_col_val"):
-                column_titles[col0] = (
-                    args["facet_col"] + "=" + str(trace._subplot_col_val)
-                )
 
     # Default row/column widths uniform
     column_widths = [1.0] * ncols
@@ -1085,7 +1583,7 @@ def init_figure(
 
     # Build column_widths/row_heights
     if subplot_type == "xy":
-        if has_marginal_x:
+        if bool(args.get("marginal_x", False)):
             if args["marginal_x"] == "histogram" or ("color" in args and args["color"]):
                 main_size = 0.74
             else:
@@ -1093,10 +1591,12 @@ def init_figure(
 
             row_heights = [main_size] * (nrows - 1) + [1 - main_size]
             vertical_spacing = 0.01
+        elif args.get("facet_col_wrap", 0):
+            vertical_spacing = 0.07
         else:
             vertical_spacing = 0.03
 
-        if has_marginal_y:
+        if bool(args.get("marginal_y", False)):
             if args["marginal_y"] == "histogram" or ("color" in args and args["color"]):
                 main_size = 0.74
             else:
@@ -1115,6 +1615,15 @@ def init_figure(
         vertical_spacing = 0.1
         horizontal_spacing = 0.1
 
+    facet_col_wrap = args.get("facet_col_wrap", 0)
+    if facet_col_wrap:
+        subplot_labels = [None] * nrows * ncols
+        while len(col_labels) < nrows * ncols:
+            col_labels.append(None)
+        for i in range(nrows):
+            for j in range(ncols):
+                subplot_labels[i * ncols + j] = col_labels[(nrows - 1 - i) * ncols + j]
+
     # Create figure with subplots
     fig = make_subplots(
         rows=nrows,
@@ -1122,8 +1631,9 @@ def init_figure(
         specs=specs,
         shared_xaxes="all",
         shared_yaxes="all",
-        row_titles=row_titles,
-        column_titles=column_titles,
+        row_titles=[] if facet_col_wrap else list(reversed(row_labels)),
+        column_titles=[] if facet_col_wrap else col_labels,
+        subplot_titles=subplot_labels if facet_col_wrap else [],
         horizontal_spacing=horizontal_spacing,
         vertical_spacing=vertical_spacing,
         row_heights=row_heights,

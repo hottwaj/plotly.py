@@ -9,8 +9,8 @@ colorbrewer is made available under an Apache license: http://colorbrewer2.org/e
 from ._swatches import _swatches
 
 
-def swatches():
-    return _swatches(__name__, globals())
+def swatches(template=None):
+    return _swatches(__name__, globals(), template)
 
 
 swatches.__doc__ = _swatches.__doc__
@@ -456,3 +456,10 @@ YlOrRd = [
     "rgb(189,0,38)",
     "rgb(128,0,38)",
 ]
+
+# Prefix variable names with _ so that they will not be added to the swatches
+_contents = dict(globals())
+for _k, _cols in _contents.items():
+    if _k.startswith("_") or _k == "swatches" or _k.endswith("_r"):
+        continue
+    globals()[_k + "_r"] = _cols[::-1]

@@ -301,6 +301,35 @@ class TsrcValidator(_plotly_utils.basevalidators.SrcValidator):
 import _plotly_utils.basevalidators
 
 
+class TexttemplatesrcValidator(_plotly_utils.basevalidators.SrcValidator):
+    def __init__(self, plotly_name="texttemplatesrc", parent_name="bar", **kwargs):
+        super(TexttemplatesrcValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            edit_type=kwargs.pop("edit_type", "none"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
+class TexttemplateValidator(_plotly_utils.basevalidators.StringValidator):
+    def __init__(self, plotly_name="texttemplate", parent_name="bar", **kwargs):
+        super(TexttemplateValidator, self).__init__(
+            plotly_name=plotly_name,
+            parent_name=parent_name,
+            array_ok=kwargs.pop("array_ok", True),
+            edit_type=kwargs.pop("edit_type", "plot"),
+            role=kwargs.pop("role", "info"),
+            **kwargs
+        )
+
+
+import _plotly_utils.basevalidators
+
+
 class TextsrcValidator(_plotly_utils.basevalidators.SrcValidator):
     def __init__(self, plotly_name="textsrc", parent_name="bar", **kwargs):
         super(TextsrcValidator, self).__init__(
@@ -779,14 +808,14 @@ class MarkerValidator(_plotly_utils.basevalidators.CompoundValidator):
                 hex, hsl, hsv, or named color string. At
                 minimum, a mapping for the lowest (0) and
                 highest (1) values are required. For example,
-                `[[0, 'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To
-                control the bounds of the colorscale in color
-                space, use`marker.cmin` and `marker.cmax`.
-                Alternatively, `colorscale` may be a palette
-                name string of the following list: Greys,YlGnBu
-                ,Greens,YlOrRd,Bluered,RdBu,Reds,Blues,Picnic,R
-                ainbow,Portland,Jet,Hot,Blackbody,Earth,Electri
-                c,Viridis,Cividis.
+                `[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`.
+                To control the bounds of the colorscale in
+                color space, use`marker.cmin` and
+                `marker.cmax`. Alternatively, `colorscale` may
+                be a palette name string of the following list:
+                Greys,YlGnBu,Greens,YlOrRd,Bluered,RdBu,Reds,Bl
+                ues,Picnic,Rainbow,Portland,Jet,Hot,Blackbody,E
+                arth,Electric,Viridis,Cividis.
             colorsrc
                 Sets the source reference on plot.ly for  color
                 .
@@ -1110,8 +1139,8 @@ class ErrorYValidator(_plotly_utils.basevalidators.CompoundValidator):
                 percentage of underlying data. Set this
                 percentage in `value`. If "sqrt", the bar
                 lengths correspond to the sqaure of the
-                underlying data. If "array", the bar lengths
-                are set with data set `array`.
+                underlying data. If "data", the bar lengths are
+                set with data set `array`.
             value
                 Sets the value of either the percentage (if
                 `type` is set to "percent") or the constant (if
@@ -1185,8 +1214,8 @@ class ErrorXValidator(_plotly_utils.basevalidators.CompoundValidator):
                 percentage of underlying data. Set this
                 percentage in `value`. If "sqrt", the bar
                 lengths correspond to the sqaure of the
-                underlying data. If "array", the bar lengths
-                are set with data set `array`.
+                underlying data. If "data", the bar lengths are
+                set with data set `array`.
             value
                 Sets the value of either the percentage (if
                 `type` is set to "percent") or the constant (if

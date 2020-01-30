@@ -63,7 +63,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -207,9 +206,16 @@ class NodeValidator(_plotly_utils.basevalidators.CompoundValidator):
                 inserted using %{variable}, for example "y:
                 %{y}". Numbers are formatted using d3-format's
                 syntax %{variable:d3-format}, for example
-                "Price: %{y:$.2f}". See https://github.com/d3/d
-                3-format/blob/master/README.md#locale_format
-                for details on the formatting syntax. The
+                "Price: %{y:$.2f}".
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                for details on the formatting syntax. Dates are
+                formatted using d3-time-format's syntax
+                %{variable|d3-time-format}, for example "Day:
+                %{2019-01-01|%A}".
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                for details on the date formatting syntax. The
                 variables available in `hovertemplate` are the
                 ones emitted as event data described at this
                 link https://plot.ly/javascript/plotlyjs-
@@ -340,9 +346,16 @@ class LinkValidator(_plotly_utils.basevalidators.CompoundValidator):
                 inserted using %{variable}, for example "y:
                 %{y}". Numbers are formatted using d3-format's
                 syntax %{variable:d3-format}, for example
-                "Price: %{y:$.2f}". See https://github.com/d3/d
-                3-format/blob/master/README.md#locale_format
-                for details on the formatting syntax. The
+                "Price: %{y:$.2f}".
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                for details on the formatting syntax. Dates are
+                formatted using d3-time-format's syntax
+                %{variable|d3-time-format}, for example "Day:
+                %{2019-01-01|%A}".
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                for details on the date formatting syntax. The
                 variables available in `hovertemplate` are the
                 ones emitted as event data described at this
                 link https://plot.ly/javascript/plotlyjs-
@@ -412,7 +425,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs

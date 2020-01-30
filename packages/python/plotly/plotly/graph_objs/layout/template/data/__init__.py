@@ -4,6 +4,8 @@ from plotly.graph_objs import Volume
 
 from plotly.graph_objs import Violin
 
+from plotly.graph_objs import Treemap
+
 from plotly.graph_objs import Table
 
 from plotly.graph_objs import Surface
@@ -48,6 +50,10 @@ from plotly.graph_objs import Mesh3d
 
 from plotly.graph_objs import Isosurface
 
+from plotly.graph_objs import Indicator
+
+from plotly.graph_objs import Image
+
 from plotly.graph_objs import Histogram
 
 from plotly.graph_objs import Histogram2d
@@ -62,6 +68,8 @@ from plotly.graph_objs import Funnel
 
 from plotly.graph_objs import Funnelarea
 
+from plotly.graph_objs import Densitymapbox
+
 from plotly.graph_objs import Contour
 
 from plotly.graph_objs import Contourcarpet
@@ -69,6 +77,8 @@ from plotly.graph_objs import Contourcarpet
 from plotly.graph_objs import Cone
 
 from plotly.graph_objs import Choropleth
+
+from plotly.graph_objs import Choroplethmapbox
 
 from plotly.graph_objs import Carpet
 
@@ -81,3 +91,53 @@ from plotly.graph_objs import Bar
 from plotly.graph_objs import Barpolar
 
 from plotly.graph_objs import Area
+
+__all__ = [
+    "Area",
+    "Bar",
+    "Barpolar",
+    "Box",
+    "Candlestick",
+    "Carpet",
+    "Choropleth",
+    "Choroplethmapbox",
+    "Cone",
+    "Contour",
+    "Contourcarpet",
+    "Densitymapbox",
+    "Funnel",
+    "Funnelarea",
+    "Heatmap",
+    "Heatmapgl",
+    "Histogram",
+    "Histogram2d",
+    "Histogram2dContour",
+    "Image",
+    "Indicator",
+    "Isosurface",
+    "Mesh3d",
+    "Ohlc",
+    "Parcats",
+    "Parcoords",
+    "Pie",
+    "Pointcloud",
+    "Sankey",
+    "Scatter",
+    "Scatter3d",
+    "Scattercarpet",
+    "Scattergeo",
+    "Scattergl",
+    "Scattermapbox",
+    "Scatterpolar",
+    "Scatterpolargl",
+    "Scatterternary",
+    "Splom",
+    "Streamtube",
+    "Sunburst",
+    "Surface",
+    "Table",
+    "Treemap",
+    "Violin",
+    "Volume",
+    "Waterfall",
+]

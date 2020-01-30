@@ -756,7 +756,7 @@ class Colorscale(_BaseTraceHierarchyType):
         arrays mapping a normalized value to an rgb, rgba, hex, hsl,
         hsv, or named color string. At minimum, a mapping for the
         lowest (0) and highest (1) values are required. For example,
-        `[[0, 'rgb(0,0,255)', [1, 'rgb(255,0,0)']]`. To control the
+        `[[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]`. To control the
         bounds of the colorscale in color space, use`cmin` and `cmax`.
         Alternatively, `colorscale` may be a palette name string of the
         following list: Greys,YlGnBu,Greens,YlOrRd,Bluered,RdBu,Reds,Bl
@@ -786,7 +786,8 @@ class Colorscale(_BaseTraceHierarchyType):
                  'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar', 'spectral',
                  'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn', 'tealrose',
                  'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+                 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
+            Appending '_r' to a named colorscale reverses it.
 
         Returns
         -------
@@ -895,7 +896,7 @@ class Colorscale(_BaseTraceHierarchyType):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -954,7 +955,7 @@ class Colorscale(_BaseTraceHierarchyType):
             containing arrays mapping a normalized value to an rgb,
             rgba, hex, hsl, hsv, or named color string. At minimum,
             a mapping for the lowest (0) and highest (1) values are
-            required. For example, `[[0, 'rgb(0,0,255)', [1,
+            required. For example, `[[0, 'rgb(0,0,255)'], [1,
             'rgb(255,0,0)']]`. To control the bounds of the
             colorscale in color space, use`cmin` and `cmax`.
             Alternatively, `colorscale` may be a palette name
@@ -1048,5 +1049,7 @@ an instance of plotly.graph_objs.sankey.link.Colorscale"""
         # ------------------
         self._skip_invalid = False
 
+
+__all__ = ["Colorscale", "Colorscale", "Hoverlabel", "Line", "hoverlabel"]
 
 from plotly.graph_objs.sankey.link import hoverlabel

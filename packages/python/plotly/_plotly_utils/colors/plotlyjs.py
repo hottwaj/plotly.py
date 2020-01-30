@@ -174,8 +174,15 @@ _plotlyjs_scales = {
 # Create variable named after each scale that contains the sequence of colors only
 for scale_name, scale_pairs in _plotlyjs_scales.items():
     scale_sequence = [c[1] for c in scale_pairs]
-    exec (
+    exec(
         "{scale_name} = {scale_sequence}".format(
             scale_name=scale_name, scale_sequence=scale_sequence
         )
     )
+
+# Prefix variable names with _ so that they will not be added to the swatches
+_contents = dict(globals())
+for _k, _cols in _contents.items():
+    if _k.startswith("_") or _k == "swatches" or _k.endswith("_r"):
+        continue
+    globals()[_k + "_r"] = _cols[::-1]

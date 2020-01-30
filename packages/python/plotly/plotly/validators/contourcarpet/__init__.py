@@ -153,7 +153,6 @@ class UidValidator(_plotly_utils.basevalidators.StringValidator):
         super(UidValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "plot"),
             role=kwargs.pop("role", "info"),
             **kwargs
@@ -360,8 +359,9 @@ class LineValidator(_plotly_utils.basevalidators.CompoundValidator):
                 "data_docs",
                 """
             color
-                Sets the color of the contour level. Has no if
-                `contours.coloring` is set to "lines".
+                Sets the color of the contour level. Has no
+                effect if `contours.coloring` is set to
+                "lines".
             dash
                 Sets the dash style of lines. Set to a dash
                 type string ("solid", "dot", "dash",
@@ -371,7 +371,10 @@ class LineValidator(_plotly_utils.basevalidators.CompoundValidator):
                 Sets the amount of smoothing for the contour
                 lines, where 0 corresponds to no smoothing.
             width
-                Sets the line width (in px).
+                Sets the contour line width in (in px) Defaults
+                to 0.5 when `contours.type` is "levels".
+                Defaults to 2 when `contour.type` is
+                "constraint".
 """,
             ),
             **kwargs
@@ -416,7 +419,6 @@ class IdsValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(IdsValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             role=kwargs.pop("role", "data"),
             **kwargs
@@ -456,92 +458,6 @@ class HovertextValidator(_plotly_utils.basevalidators.DataArrayValidator):
 import _plotly_utils.basevalidators
 
 
-class HoverlabelValidator(_plotly_utils.basevalidators.CompoundValidator):
-    def __init__(self, plotly_name="hoverlabel", parent_name="contourcarpet", **kwargs):
-        super(HoverlabelValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            data_class_str=kwargs.pop("data_class_str", "Hoverlabel"),
-            data_docs=kwargs.pop(
-                "data_docs",
-                """
-            align
-                Sets the horizontal alignment of the text
-                content within hover label box. Has an effect
-                only if the hover label text spans more two or
-                more lines
-            alignsrc
-                Sets the source reference on plot.ly for  align
-                .
-            bgcolor
-                Sets the background color of the hover labels
-                for this trace
-            bgcolorsrc
-                Sets the source reference on plot.ly for
-                bgcolor .
-            bordercolor
-                Sets the border color of the hover labels for
-                this trace.
-            bordercolorsrc
-                Sets the source reference on plot.ly for
-                bordercolor .
-            font
-                Sets the font used in hover labels.
-            namelength
-                Sets the default length (in number of
-                characters) of the trace name in the hover
-                labels for all traces. -1 shows the whole name
-                regardless of length. 0-3 shows the first 0-3
-                characters, and an integer >3 will show the
-                whole name if it is less than that many
-                characters, but if it is longer, will truncate
-                to `namelength - 3` characters and add an
-                ellipsis.
-            namelengthsrc
-                Sets the source reference on plot.ly for
-                namelength .
-""",
-            ),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
-class HoverinfosrcValidator(_plotly_utils.basevalidators.SrcValidator):
-    def __init__(
-        self, plotly_name="hoverinfosrc", parent_name="contourcarpet", **kwargs
-    ):
-        super(HoverinfosrcValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            edit_type=kwargs.pop("edit_type", "none"),
-            role=kwargs.pop("role", "info"),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
-class HoverinfoValidator(_plotly_utils.basevalidators.FlaglistValidator):
-    def __init__(self, plotly_name="hoverinfo", parent_name="contourcarpet", **kwargs):
-        super(HoverinfoValidator, self).__init__(
-            plotly_name=plotly_name,
-            parent_name=parent_name,
-            array_ok=kwargs.pop("array_ok", True),
-            edit_type=kwargs.pop("edit_type", "none"),
-            extras=kwargs.pop("extras", ["all", "none", "skip"]),
-            flags=kwargs.pop("flags", ["x", "y", "z", "text", "name"]),
-            role=kwargs.pop("role", "info"),
-            **kwargs
-        )
-
-
-import _plotly_utils.basevalidators
-
-
 class FillcolorValidator(_plotly_utils.basevalidators.ColorValidator):
     def __init__(self, plotly_name="fillcolor", parent_name="contourcarpet", **kwargs):
         super(FillcolorValidator, self).__init__(
@@ -562,7 +478,6 @@ class DbValidator(_plotly_utils.basevalidators.NumberValidator):
         super(DbValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             implied_edits=kwargs.pop("implied_edits", {"ytype": "scaled"}),
             role=kwargs.pop("role", "info"),
@@ -578,7 +493,6 @@ class DaValidator(_plotly_utils.basevalidators.NumberValidator):
         super(DaValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc"),
             implied_edits=kwargs.pop("implied_edits", {"xtype": "scaled"}),
             role=kwargs.pop("role", "info"),
@@ -645,8 +559,9 @@ class ContoursValidator(_plotly_utils.basevalidators.CompoundValidator):
             labelformat
                 Sets the contour label formatting rule using d3
                 formatting mini-language which is very similar
-                to Python, see: https://github.com/d3/d3-format
-                /blob/master/README.md#locale_format.
+                to Python, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
             operation
                 Sets the constraint operation. "=" keeps
                 regions equal to `value` "<" and "<=" keep
@@ -835,12 +750,13 @@ class ColorBarValidator(_plotly_utils.basevalidators.CompoundValidator):
             tickformat
                 Sets the tick label formatting rule using d3
                 formatting mini-languages which are very
-                similar to those in Python. For numbers, see: h
-                ttps://github.com/d3/d3-format/blob/master/READ
-                ME.md#locale_format And for dates see:
-                https://github.com/d3/d3-time-
-                format/blob/master/README.md#locale_format We
-                add one item to d3's date formatter: "%{n}f"
+                similar to those in Python. For numbers, see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Formatting.md#d3_format
+                And for dates see:
+                https://github.com/d3/d3-3.x-api-
+                reference/blob/master/Time-Formatting.md#format
+                We add one item to d3's date formatter: "%{n}f"
                 for fractional seconds with n digits. For
                 example, *2016-10-13 09:15:23.456* with
                 tickformat "%H~%M~%S.%2f" would display
@@ -1004,7 +920,6 @@ class B0Validator(_plotly_utils.basevalidators.AnyValidator):
         super(B0Validator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc+clearAxisTypes"),
             implied_edits=kwargs.pop("implied_edits", {"ytype": "scaled"}),
             role=kwargs.pop("role", "info"),
@@ -1020,7 +935,6 @@ class BValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(BValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc+clearAxisTypes"),
             implied_edits=kwargs.pop("implied_edits", {"ytype": "array"}),
             role=kwargs.pop("role", "data"),
@@ -1099,7 +1013,6 @@ class A0Validator(_plotly_utils.basevalidators.AnyValidator):
         super(A0Validator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc+clearAxisTypes"),
             implied_edits=kwargs.pop("implied_edits", {"xtype": "scaled"}),
             role=kwargs.pop("role", "info"),
@@ -1115,7 +1028,6 @@ class AValidator(_plotly_utils.basevalidators.DataArrayValidator):
         super(AValidator, self).__init__(
             plotly_name=plotly_name,
             parent_name=parent_name,
-            anim=kwargs.pop("anim", True),
             edit_type=kwargs.pop("edit_type", "calc+clearAxisTypes"),
             implied_edits=kwargs.pop("implied_edits", {"xtype": "array"}),
             role=kwargs.pop("role", "data"),

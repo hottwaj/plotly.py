@@ -32,7 +32,8 @@ def create_2d_density(
     width=600,
 ):
     """
-    Returns figure for a 2D density plot
+    **deprecated**, use instead
+    :func:`plotly.express.density_heatmap`.
 
     :param (list|array) x: x-axis data for plot generation
     :param (list|array) y: y-axis data for plot generation
@@ -51,49 +52,46 @@ def create_2d_density(
     :param (float) height: the height of the chart
     :param (float) width: the width of the chart
 
+    Examples
+    --------
+
     Example 1: Simple 2D Density Plot
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory create_2d_density
 
-    import numpy as np
+    >>> from plotly.figure_factory import create_2d_density
+    >>> import numpy as np
 
-    # Make data points
-    t = np.linspace(-1,1.2,2000)
-    x = (t**3)+(0.3*np.random.randn(2000))
-    y = (t**6)+(0.3*np.random.randn(2000))
+    >>> # Make data points
+    >>> t = np.linspace(-1,1.2,2000)
+    >>> x = (t**3)+(0.3*np.random.randn(2000))
+    >>> y = (t**6)+(0.3*np.random.randn(2000))
 
-    # Create a figure
-    fig = create_2D_density(x, y)
+    >>> # Create a figure
+    >>> fig = create_2d_density(x, y)
 
-    # Plot the data
-    py.iplot(fig, filename='simple-2d-density')
-    ```
+    >>> # Plot the data
+    >>> fig.show()
 
     Example 2: Using Parameters
-    ```
-    import plotly.plotly as py
-    from plotly.figure_factory create_2d_density
 
-    import numpy as np
+    >>> from plotly.figure_factory import create_2d_density
 
-    # Make data points
-    t = np.linspace(-1,1.2,2000)
-    x = (t**3)+(0.3*np.random.randn(2000))
-    y = (t**6)+(0.3*np.random.randn(2000))
+    >>> import numpy as np
 
-    # Create custom colorscale
-    colorscale = ['#7A4579', '#D56073', 'rgb(236,158,105)',
-                  (1, 1, 0.2), (0.98,0.98,0.98)]
+    >>> # Make data points
+    >>> t = np.linspace(-1,1.2,2000)
+    >>> x = (t**3)+(0.3*np.random.randn(2000))
+    >>> y = (t**6)+(0.3*np.random.randn(2000))
 
-    # Create a figure
-    fig = create_2D_density(
-        x, y, colorscale=colorscale,
-        hist_color='rgb(255, 237, 222)', point_size=3)
+    >>> # Create custom colorscale
+    >>> colorscale = ['#7A4579', '#D56073', 'rgb(236,158,105)',
+    ...              (1, 1, 0.2), (0.98,0.98,0.98)]
 
-    # Plot the data
-    py.iplot(fig, filename='use-parameters')
-    ```
+    >>> # Create a figure
+    >>> fig = create_2d_density(x, y, colorscale=colorscale,
+    ...       hist_color='rgb(255, 237, 222)', point_size=3)
+
+    >>> # Plot the data
+    >>> fig.show()
     """
 
     # validate x and y are filled with numbers only
