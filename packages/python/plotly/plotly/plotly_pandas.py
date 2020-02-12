@@ -60,9 +60,14 @@ def charts_table(charts, cols):
                     layout['width'] = chart.width
                     layout['height'] = chart.height
                 bundle = chart._repr_mimebundle_()
-                bundle_content = bundle.get('text/html', bundle.get('image/svg+xml'))
+                bundle_content = None
+                for k in ['text/html', 'image/svg+xml', 'image/png']:
+                    bundle_content = bundle.get(k, None)
+                    if bundle_content is not None:
+                        break
                 if bundle_content is None:
-                    raise ValueError('No html or svg bundle available - check value of plotly.pio.renderers.default')
+                    raise ValueError('No html or svg bundle available (only %s available) - check value of plotly.pio.renderers.default'
+                                     % ', '.join(bundle.keys()))
                 table_content += '<td class="table-no-border">%s</td>' % bundle_content
         table_content += '</tr>'
     table_content += '</table>'
@@ -147,6 +152,14 @@ class _PlotlyChartBundle(object):
     def set_ylabel(self, title):
         self._get_or_create_subdict(('layout', 'yaxis'))['title'] = title
         return self
+        
+    def write_image(self, filename, scale, *args, **kwargs):
+        from plotly.io import write_image
+        write_image(self.data_layout, filename, scale=scale, *args, **kwargs)
+
+    def write_json(self, filename, *args, **kwargs):
+        from plotly.io import write_json
+        write_json(self.data_layout, filename, *args, **kwargs)        
                 
 def scatter(df, x_col, y_col, 
                      groups_col = None, tooltip_cols = [], group_order = None, 
