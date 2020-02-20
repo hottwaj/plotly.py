@@ -145,13 +145,17 @@ class _PlotlyChartBundle(object):
             
         return d
             
-    def set_xlabel(self, title):
-        self._get_or_create_subdict(('layout', 'xaxis'))['title'] = title
+    def set_axislabel(self, axis, title, replace_existing = True):
+        axis_dict = self._get_or_create_subdict(('layout', '%saxis' % axis))
+        if replace_existing or 'title' not in axis_dict:
+            axis_dict['title'] = title
         return self
+        
+    def set_xlabel(self, title, replace_existing = True):
+        return self.set_axislabel('x', title, replace_existing)
     
-    def set_ylabel(self, title):
-        self._get_or_create_subdict(('layout', 'yaxis'))['title'] = title
-        return self
+    def set_ylabel(self, title, replace_existing = True):
+        return self.set_axislabel('y', title, replace_existing)
         
     def write_image(self, filename, scale, *args, **kwargs):
         from plotly.io import write_image
@@ -166,11 +170,21 @@ def scatter(df, x_col, y_col,
                      layout = dict(), series_dict = dict(), x_order = [], group_colours = dict(),
                      color_col = None, size_col = None,
                      scatter_type = 'scatter',  #could be changed to e.g. scattergl
+                     auto_axis_title = True,
+                     legend_or_color_title = True,
+                     auto_break_legend_or_color_title = True,
                      width = 600, height = 400):
     pl_data = []
     if groups_col is not None and color_col is not None:
         raise RuntimeError('Only one of "groups_col" or "color_col" should be provided when calling this function')
         
+    legend_title = groups_col or color_col
+    if auto_break_legend_or_color_title and len(legend_title) >= 10:
+        split_leg = legend_title.split()
+        if len(split_leg) > 1:
+            mid_point = len(split_leg) // 2
+            legend_title = ' '.join(split_leg[:mid_point]) + '<br>' + ' '.join(split_leg[mid_point:])
+            
     if groups_col is not None:
         groups_available = set(df[groups_col])
         sorted_groups = group_order if group_order is not None else sorted(groups_available)
@@ -208,7 +222,10 @@ def scatter(df, x_col, y_col,
             
         if color_col is not None:
             marker_dict['color'] = df[color_col].values
-            marker_dict['colorbar'] = {'title': color_col} #' '.join([color_col, field_caption]), 'ticksuffix': ticksuffix}
+            if legend_or_color_title:
+                marker_dict['colorbar'] = {'title': '<b>%s</b>' % legend_title} #' '.join([color_col, field_caption]), 'ticksuffix': ticksuffix}
+                if df[color_col].max() > 0 and df[color_col].min() < 0:
+                    marker_dict['cmid'] = 0
 
         if size_col is not None:
             marker_dict['size'] = df[size_col].to_list()
@@ -232,10 +249,19 @@ def scatter(df, x_col, y_col,
     
     data_layout = {'data': pl_data, 'layout': layout}
 
-    return _PlotlyChartBundle(data_layout, 
-                              width = width, 
-                              height = height, 
-                              config = default_config)
+    bundle =  _PlotlyChartBundle(data_layout, 
+                                 width = width, 
+                                 height = height, 
+                                 config = default_config)
+    
+    if auto_axis_title:
+        bundle.set_xlabel(x_col, replace_existing = False)
+        bundle.set_ylabel(y_col, replace_existing = False)
+        layout = bundle.data_layout['layout']
+        if legend_or_color_title and 'legent_title' not in layout and groups_col is not None:
+            layout['legend_title'] = '<b>%s</b>' % legend_title
+        
+    return bundle
 
 def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', value_format = '%.2f', field_caption = '', ticksuffix = '', width = 700, height=500):
     raise DeprecationWarning('shaded_scatter is deprecated and scatter with "color_col" can be used directly instead')
