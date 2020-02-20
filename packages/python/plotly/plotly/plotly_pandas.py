@@ -341,3 +341,74 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
                               config = default_config)
 
 
+
+def boxplot(dataframe, 
+            orientation = 'vertical',
+            column_settings = dict(),
+            all_columns_settings = dict(),
+            layout = dict(),
+            width = 800, height = 500, single_color = True,
+            BOX_STDEVS = [3, 2, 1, 0, -1, -2, -3]):
+    import scipy
+    BOX_STDEV_PERCENTILES = scipy.stats.norm.cdf(BOX_STDEVS)
+
+    if orientation == 'vertical':
+        outliers_key = 'y'
+        names_key = 'x'
+    else:
+        outliers_key = 'x'
+        names_key = 'y'
+
+    box_list = []
+    if single_color:
+        qs_df = dataframe.quantile(BOX_STDEV_PERCENTILES).T
+        qs_df.columns = BOX_STDEVS
+        coldata = {"lowerfence": qs_df[-2].values, 
+                         "q1": qs_df[-1].values, 
+                         "median": qs_df[0].values,
+                         #"notchspan": 0.2, #for setting a notch in the box at the median
+                         "q3": qs_df[1].values,
+                         "upperfence": qs_df[2].values,
+                         #"mean": [src_df[col].mean()],
+                         #"sd": [0.2],
+                         "type": "box",
+                         outliers_key: [[qs[-3], qs[3]] for i, qs in qs_df.iterrows()],
+                         names_key: qs_df.index,
+                         "boxpoints": "outliers"}
+        coldata.update(all_columns_settings)
+        box_list.append(coldata)
+    else:
+        for col in dataframe:
+            qs = pandas.Series(dataframe[col].quantile(BOX_STDEV_PERCENTILES).values,
+                               index = BOX_STDEVS)
+            coldata = {"name": col,
+                             "lowerfence": [qs[-2]], 
+                             "q1": [qs[-1]], 
+                             "median": [qs[0]],
+                             #"notchspan": 0.2, #for setting a notch in the box at the median
+                             "q3": [qs[1]],
+                             "upperfence": [qs[2]],
+                             #"mean": [src_df[col].mean()],
+                             #"sd": [0.2],
+                             "type": "box",
+                             outliers_key: [[qs[-3], qs[3]]],
+                             names_key: [col],
+                             "boxpoints": "outliers"}
+            
+        coldata.update(all_columns_settings)
+        if col in column_settings:
+            coldata.update(column_settings[col])
+            
+        box_list.append(coldata)
+        
+    layout = reduce(dict_merge, [{}, default_layout, layout])  #overwrite default_layout with given layout
+
+    layout['width'] = width
+    layout['height'] = height
+        
+    data_layout = {'data': box_list, 'layout': layout}
+
+    return _PlotlyChartBundle(data_layout, 
+                              width = width, 
+                              height = height, 
+                              config = default_config)
