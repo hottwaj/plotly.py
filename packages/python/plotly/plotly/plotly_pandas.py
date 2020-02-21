@@ -166,7 +166,7 @@ class _PlotlyChartBundle(object):
         write_json(self.data_layout, filename, *args, **kwargs)        
                 
 def scatter(df, x_col, y_col, 
-                     groups_col = None, tooltip_cols = [], group_order = None, 
+                     groups_col = None, tooltip_cols = None, group_order = None, 
                      layout = dict(), series_dict = dict(), x_order = [], group_colours = dict(),
                      color_col = None, size_col = None,
                      scatter_type = 'scatter',  #could be changed to e.g. scattergl
@@ -178,13 +178,19 @@ def scatter(df, x_col, y_col,
     if groups_col is not None and color_col is not None:
         raise RuntimeError('Only one of "groups_col" or "color_col" should be provided when calling this function')
         
-    legend_title = groups_col or color_col
-    if auto_break_legend_or_color_title and len(legend_title) >= 10:
-        split_leg = legend_title.split()
+    if tooltip_cols is None:
+        tooltip_cols = []
+        
+    breakdown_col = groups_col or color_col
+    if breakdown_col not in tooltip_cols:
+        tooltip_cols.insert(0, breakdown_col)
+        
+    if auto_break_legend_or_color_title and len(breakdown_col) >= 10:
+        split_leg = breakdown_col.split()
         if len(split_leg) > 1:
             mid_point = len(split_leg) // 2
-            legend_title = ' '.join(split_leg[:mid_point]) + '<br>' + ' '.join(split_leg[mid_point:])
-            
+            breakdown_col = ' '.join(split_leg[:mid_point]) + '<br>' + ' '.join(split_leg[mid_point:])
+        
     if groups_col is not None:
         groups_available = set(df[groups_col])
         sorted_groups = group_order if group_order is not None else sorted(groups_available)
@@ -223,7 +229,7 @@ def scatter(df, x_col, y_col,
         if color_col is not None:
             marker_dict['color'] = df[color_col].values
             if legend_or_color_title:
-                marker_dict['colorbar'] = {'title': '<b>%s</b>' % legend_title} #' '.join([color_col, field_caption]), 'ticksuffix': ticksuffix}
+                marker_dict['colorbar'] = {'title': '<b>%s</b>' % breakdown_col} #' '.join([color_col, field_caption]), 'ticksuffix': ticksuffix}
                 if df[color_col].max() > 0 and df[color_col].min() < 0:
                     marker_dict['cmid'] = 0
 
@@ -259,7 +265,7 @@ def scatter(df, x_col, y_col,
         bundle.set_ylabel(y_col, replace_existing = False)
         layout = bundle.data_layout['layout']
         if legend_or_color_title and 'legent_title' not in layout and groups_col is not None:
-            layout['legend_title'] = '<b>%s</b>' % legend_title
+            layout['legend_title'] = '<b>%s</b>' % breakdown_col
         
     return bundle
 
@@ -344,6 +350,7 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
 
 def boxplot(dataframe, 
             orientation = 'vertical',
+            use_interquartile_range = False,
             column_settings = dict(),
             all_columns_settings = dict(),
             layout = dict(),
@@ -359,6 +366,10 @@ def boxplot(dataframe,
         outliers_key = 'x'
         names_key = 'y'
 
+    if use_interquartile_range:
+        BOX_STDEV_PERCENTILES[2] = 0.75
+        BOX_STDEV_PERCENTILES[4] = 0.25
+        
     box_list = []
     if single_color:
         qs_df = dataframe.quantile(BOX_STDEV_PERCENTILES).T
