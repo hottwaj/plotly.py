@@ -174,6 +174,21 @@ def scatter(df, x_col, y_col,
                      legend_or_color_title = True,
                      auto_break_legend_or_color_title = True,
                      width = 600, height = 400):
+    """Scatter plot from data in a DataFrame.  
+    
+    The DataFrame to work on should be passed as `df`
+    
+    `x_col` should contain the column name of column contain x-axis values
+    `y_col` should contain the column name of column contain y-axis values
+    
+    Use `color_col` to make scatter points coloured according to values in the column with that name e.g. by Temperature
+    
+    Use `groups_col` to make scatter points coloured by group according to values in that column e.g. by Country
+    
+    `layout` can contain extra Plotly layout info like chart title, axes titles etc
+    e.g. {'title': 'chart title', 'xaxis': {'title': 'x title'}}
+    """
+                         
     pl_data = []
     if groups_col is not None and color_col is not None:
         raise RuntimeError('Only one of "groups_col" or "color_col" should be provided when calling this function')
@@ -302,6 +317,23 @@ def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', val
 
 def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_settings = dict(), x_and_y = True, 
                      width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], col_level_separator = ': '):
+    """Generic plot from data in a DataFrame.  Can be used for e.g. lines, bars and histograms.
+    
+    The DataFrame to work on should be passed as `dataframe`
+    
+    Every column in `dataframe` is plotted as a separate series (e.g. a separate line or bar group)
+    
+    The index of dataframe is used for x-axis values
+    
+    `layout` can contain extra Plotly layout info like chart title, axes titles etc
+    e.g. {'title': 'chart title', 'xaxis': {'title': 'x title'}}
+    
+    `all_columns_settings` can be used to specify an appearance setting for all columns, 
+    e.g. {'type': 'bar'} makes all of the columns display as bar charts
+    
+    `column_settings` can be used to specify an appearance setting for specific columns,
+    e.g. {'Average data line': {'marker': {'color': 'black'}}}
+    """
     chart_data = []
     index = dataframe.index
     if isinstance(index, pandas.DatetimeIndex):
