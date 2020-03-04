@@ -182,14 +182,15 @@ def scatter(df, x_col, y_col,
         tooltip_cols = []
         
     breakdown_col = groups_col or color_col
-    if breakdown_col not in tooltip_cols:
-        tooltip_cols.insert(0, breakdown_col)
-        
-    if auto_break_legend_or_color_title and len(breakdown_col) >= 10:
-        split_leg = breakdown_col.split()
-        if len(split_leg) > 1:
-            mid_point = len(split_leg) // 2
-            breakdown_col = ' '.join(split_leg[:mid_point]) + '<br>' + ' '.join(split_leg[mid_point:])
+    if breakdown_col is not None:
+        if breakdown_col not in tooltip_cols:
+            tooltip_cols.insert(0, breakdown_col)
+            
+        if auto_break_legend_or_color_title and len(breakdown_col) >= 10:
+            split_leg = breakdown_col.split()
+            if len(split_leg) > 1:
+                mid_point = len(split_leg) // 2
+                breakdown_col = ' '.join(split_leg[:mid_point]) + '<br>' + ' '.join(split_leg[mid_point:])
         
     if groups_col is not None:
         groups_available = set(df[groups_col])
@@ -264,7 +265,7 @@ def scatter(df, x_col, y_col,
         bundle.set_xlabel(x_col, replace_existing = False)
         bundle.set_ylabel(y_col, replace_existing = False)
         layout = bundle.data_layout['layout']
-        if legend_or_color_title and 'legent_title' not in layout and groups_col is not None:
+        if legend_or_color_title and 'legent_title' not in layout and breakdown_col is not None:
             layout['legend_title'] = '<b>%s</b>' % breakdown_col
         
     return bundle
