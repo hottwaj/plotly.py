@@ -5,6 +5,8 @@ import copy
 import uuid
 from past.builtins import basestring    # pip install future
 
+from pandas.io.formats.style import Styler
+
 from functools import partial, reduce
 
 #dependency on plotly package added - actually this is only to load the plotly js script...
@@ -53,21 +55,24 @@ def charts_table(charts, cols):
         table_content += '<tr class="table-no-border">'
         for chart in row:
             if chart is not None:
-                #odd re-writing of width and height needed to ensure they are not
-                #overwritten by multiple charts plotted simultaneously
-                if 'layout' in chart.data_layout:
-                    layout = chart.data_layout['layout']
-                    layout['width'] = chart.width
-                    layout['height'] = chart.height
-                bundle = chart._repr_mimebundle_()
-                bundle_content = None
-                for k in ['text/html', 'image/svg+xml', 'image/png']:
-                    bundle_content = bundle.get(k, None)
-                    if bundle_content is not None:
-                        break
-                if bundle_content is None:
-                    raise ValueError('No html or svg bundle available (only %s available) - check value of plotly.pio.renderers.default'
-                                     % ', '.join(bundle.keys()))
+                if isinstance(chart, _PlotlyChartBundle):
+                    #odd re-writing of width and height needed to ensure they are not
+                    #overwritten by multiple charts plotted simultaneously
+                    if 'layout' in chart.data_layout:
+                        layout = chart.data_layout['layout']
+                        layout['width'] = chart.width
+                        layout['height'] = chart.height
+                    bundle = chart._repr_mimebundle_()
+                    bundle_content = None
+                    for k in ['text/html', 'image/svg+xml', 'image/png']:
+                        bundle_content = bundle.get(k, None)
+                        if bundle_content is not None:
+                            break
+                    if bundle_content is None:
+                        raise ValueError('No html or svg bundle available (only %s available) - check value of plotly.pio.renderers.default'
+                                         % ', '.join(bundle.keys()))
+                elif isinstance(chart, Styler):
+                    bundle_content = chart.render()
                 table_content += '<td class="table-no-border">%s</td>' % bundle_content
         table_content += '</tr>'
     table_content += '</table>'
