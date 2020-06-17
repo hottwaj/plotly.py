@@ -24,7 +24,7 @@ display(HTML("""
 </style>"""))
 
 import plotly.io as pio
-pio.renderers.default = 'iframe'  #required to return a 'text/html' iframe bundle that can then be dropped as html
+pio.renderers.default = 'iframe_connected'  #required to return a 'text/html' iframe bundle that can then be dropped as html
     
 DEFAULT_COLORS = [
     '#1f77b4',  # muted blue
