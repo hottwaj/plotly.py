@@ -321,7 +321,7 @@ def shaded_scatter(values_df, x_item, y_item, color_item = None, title = '', val
                                  }, image_width=width, image_height=height)
 
 def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_settings = dict(), x_and_y = True, 
-                     width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], col_level_separator = ': '):
+          dropna = True, width = 800, height = 500, text_dataframe = dict(), custom_chart_data = [], col_level_separator = ': '):
     """Generic plot from data in a DataFrame.  Can be used for e.g. lines, bars and histograms.
     
     The DataFrame to work on should be passed as `dataframe`
@@ -349,7 +349,11 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
         coldata = {
             "name": cleaned_colname
         }
-        na_mask = ~pandas.isnull(vals)
+        if dropna:
+            na_mask = ~pandas.isnull(vals)
+        else:
+            na_mask = slice(None)
+            
         data = vals[na_mask].values
         if x_and_y:
             coldata['x'] = index[na_mask].values
