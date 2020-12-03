@@ -392,12 +392,13 @@ def chart(dataframe, layout = dict(), column_settings = dict(), all_columns_sett
 
 def boxplot(dataframe, 
             orientation = 'vertical',
-            use_interquartile_range = False,
+            use_interquartile_range = True,
             column_settings = dict(),
             all_columns_settings = dict(),
             layout = dict(),
             width = 800, height = 500, single_color = True,
-            BOX_STDEVS = [3, 2, 1, 0, -1, -2, -3]):
+            BOX_STDEVS = [3, 2, 1, 0, -1, -2, -3],
+            show_outliers = True):
     import scipy
     BOX_STDEV_PERCENTILES = scipy.stats.norm.cdf(BOX_STDEVS)
 
@@ -425,7 +426,7 @@ def boxplot(dataframe,
                          #"mean": [src_df[col].mean()],
                          #"sd": [0.2],
                          "type": "box",
-                         outliers_key: [[qs[-3], qs[3]] for i, qs in qs_df.iterrows()],
+                         outliers_key: [[qs[-3], qs[3]] for i, qs in qs_df.iterrows()] if show_outliers else [],
                          names_key: qs_df.index,
                          "boxpoints": "outliers"}
         coldata.update(all_columns_settings)
@@ -444,7 +445,7 @@ def boxplot(dataframe,
                              #"mean": [src_df[col].mean()],
                              #"sd": [0.2],
                              "type": "box",
-                             outliers_key: [[qs[-3], qs[3]]],
+                             outliers_key: [[qs[-3], qs[3]]] if show_outliers else [],
                              names_key: [col],
                              "boxpoints": "outliers"}
             
