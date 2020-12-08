@@ -27,7 +27,7 @@ jupyter:
     language: python
     layout: base
     name: Sunburst Charts
-    order: 11
+    order: 10
     page_type: u-guide
     permalink: python/sunburst-charts/
     thumbnail: thumbnail/sunburst.gif
@@ -36,13 +36,14 @@ jupyter:
 Sunburst plots visualize hierarchical data spanning outwards radially from root to leaves. The sunburst sector hierarchy is determined by the entries in `labels` (`names` in `px.sunburst`) and in `parents`. The root starts from the center and children are added to the outer rings.
 
 Main arguments:
+
 1. `labels` (`names` in `px.sunburst` since `labels` is reserved for overriding columns names): sets the labels of sunburst sectors.
 2. `parents`: sets the parent sectors of sunburst sectors. An empty string `''` is used for the root node in the hierarchy. In this example, the root is "Eve".
 3. `values`: sets the values associated with sunburst sectors, determining their width (See the `branchvalues` section below for different modes for setting the width).
 
 ### Basic Sunburst Plot with plotly.express
 
-[Plotly Express](/python/plotly-express/) is the easy-to-use, high-level interface to Plotly, which [operates on "tidy" data](/python/px-arguments/).
+[Plotly Express](/python/plotly-express/) is the easy-to-use, high-level interface to Plotly, which [operates on a variety of types of data](/python/px-arguments/) and produces [easy-to-style figures](/python/styling-plotly-express/).
 
 With `px.sunburst`, each row of the DataFrame is represented as a sector of the sunburst.
 
@@ -75,15 +76,15 @@ fig.show()
 
 ### Sunburst of a rectangular DataFrame with continuous color argument in px.sunburst
 
-If a `color` argument is passed, the color of a node is computed as the average of the color values of its children, weighted by their values. 
+If a `color` argument is passed, the color of a node is computed as the average of the color values of its children, weighted by their values.
 
 ```python
 import plotly.express as px
 import numpy as np
 df = px.data.gapminder().query("year == 2007")
-fig = px.sunburst(df, path=['continent', 'country'], values='pop', 
+fig = px.sunburst(df, path=['continent', 'country'], values='pop',
                   color='lifeExp', hover_data=['iso_alpha'],
-                  color_continuous_scale='RdBu', 
+                  color_continuous_scale='RdBu',
                   color_continuous_midpoint=np.average(df['lifeExp'], weights=df['pop']))
 fig.show()
 ```
@@ -105,6 +106,18 @@ In the example below the color of `Saturday` and `Sunday` sectors is the same as
 import plotly.express as px
 df = px.data.tips()
 fig = px.sunburst(df, path=['sex', 'day', 'time'], values='total_bill', color='time')
+fig.show()
+```
+
+### Using an explicit mapping for discrete colors
+
+For more information about discrete colors, see the [dedicated page](/python/discrete-color).
+
+```python
+import plotly.express as px
+df = px.data.tips()
+fig = px.sunburst(df, path=['sex', 'day', 'time'], values='total_bill', color='time',
+                  color_discrete_map={'(?)':'black', 'Lunch':'gold', 'Dinner':'darkblue'})
 fig.show()
 ```
 
@@ -131,8 +144,7 @@ fig.show()
 
 ### Basic Sunburst Plot with go.Sunburst
 
-If Plotly Express does not provide a good starting point, it is also possible to use the more generic `go.Sunburst` function from `plotly.graph_objects`.
-
+If Plotly Express does not provide a good starting point, it is also possible to use [the more generic `go.Sunburst` class from `plotly.graph_objects`](/python/graph-objects/).
 
 ```python
 import plotly.graph_objects as go
@@ -143,7 +155,7 @@ fig =go.Figure(go.Sunburst(
     values=[10, 14, 12, 10, 2, 6, 6, 4, 4],
 ))
 # Update layout for tight margin
-# See https://plot.ly/python/creating-and-updating-figures/
+# See https://plotly.com/python/creating-and-updating-figures/
 fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
 
 fig.show()
@@ -184,7 +196,7 @@ fig.show()
 
 With branchvalues "total", the value of the parent represents the width of its wedge. In the example below, "Enoch" is 4 and "Awan" is 6 and so Enoch's width is 4/6ths of Awans. With branchvalues "remainder", the parent's width is determined by its own value plus those of its children. So, Enoch's width is 4/10ths of Awan's (4 / (6 + 4)).
 
-Note that this means that the sum of the values of the children cannot exceed the value of their parent when branchvalues "total". When branchvalues "relative" (the default), children will not take up all of the space below their parent (unless the parent is the root and it has a value of 0).
+Note that this means that the sum of the values of the children cannot exceed the value of their parent when branchvalues is set to "total". When branchvalues is set to "remainder" (the default), children will not take up all of the space below their parent (unless the parent is the root and it has a value of 0).
 
 ```python
 import plotly.graph_objects as go
@@ -202,7 +214,7 @@ fig.show()
 
 ### Large Number of Slices
 
-This example uses a [plotly grid attribute](https://plot.ly/python/reference/#layout-grid) for the suplots. Reference the row and column destination using the [domain](https://plot.ly/python/reference/#sunburst-domain) attribute.
+This example uses a [plotly grid attribute](https://plotly.com/python/reference/layout/#layout-grid) for the suplots. Reference the row and column destination using the [domain](https://plotly.com/python/reference/sunburst/#sunburst-domain) attribute.
 
 ```python
 import plotly.graph_objects as go
@@ -242,7 +254,7 @@ fig.show()
 The `insidetextorientation` attribute controls the orientation of text inside sectors. With
 "auto" the texts may automatically be rotated to fit with the maximum size inside the slice. Using "horizontal" (resp. "radial", "tangential") forces text to be horizontal (resp. radial or tangential). Note that `plotly` may reduce the font size in order to fit the text with the requested orientation.
 
-For a figure `fig` created with plotly express, use `fig.update_traces(insidetextorientation='...')` to change the text orientation. 
+For a figure `fig` created with plotly express, use `fig.update_traces(insidetextorientation='...')` to change the text orientation.
 
 ```python
 import plotly.graph_objects as go
@@ -288,7 +300,7 @@ fig.show()
 
 ### Sunburst chart with a continuous colorscale
 
-The example below visualizes a breakdown of sales (corresponding to sector width) and call success rate (corresponding to sector color) by region, county and salesperson level. For example, when exploring the data you can see that although the East region is behaving poorly, the Tyler county is still above average -- however, its performance is reduced by the poor success rate of salesperson GT. 
+The example below visualizes a breakdown of sales (corresponding to sector width) and call success rate (corresponding to sector color) by region, county and salesperson level. For example, when exploring the data you can see that although the East region is behaving poorly, the Tyler county is still above average -- however, its performance is reduced by the poor success rate of salesperson GT.
 
 In the right subplot which has a `maxdepth` of two levels, click on a sector to see its breakdown to lower levels.
 
@@ -308,13 +320,13 @@ def build_hierarchical_dataframe(df, levels, value_column, color_columns=None):
     """
     Build a hierarchy of levels for Sunburst or Treemap charts.
 
-    Levels are given starting from the bottom to the top of the hierarchy, 
+    Levels are given starting from the bottom to the top of the hierarchy,
     ie the last level corresponds to the root.
     """
     df_all_trees = pd.DataFrame(columns=['id', 'parent', 'value', 'color'])
     for i, level in enumerate(levels):
         df_tree = pd.DataFrame(columns=['id', 'parent', 'value', 'color'])
-        dfg = df.groupby(levels[i:]).sum(numerical_only=True)
+        dfg = df.groupby(levels[i:]).sum()
         dfg = dfg.reset_index()
         df_tree['id'] = dfg[level].copy()
         if i < len(levels) - 1:
@@ -324,7 +336,7 @@ def build_hierarchical_dataframe(df, levels, value_column, color_columns=None):
         df_tree['value'] = dfg[value_column]
         df_tree['color'] = dfg[color_columns[0]] / dfg[color_columns[1]]
         df_all_trees = df_all_trees.append(df_tree, ignore_index=True)
-    total = pd.Series(dict(id='total', parent='', 
+    total = pd.Series(dict(id='total', parent='',
                               value=df[value_column].sum(),
                               color=df[color_columns[0]].sum() / df[color_columns[1]].sum()))
     df_all_trees = df_all_trees.append(total, ignore_index=True)
@@ -335,7 +347,7 @@ df_all_trees = build_hierarchical_dataframe(df, levels, value_column, color_colu
 average_score = df['sales'].sum() / df['calls'].sum()
 
 fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
-    
+
 fig.add_trace(go.Sunburst(
     labels=df_all_trees['id'],
     parents=df_all_trees['parent'],
@@ -367,4 +379,5 @@ fig.show()
 ```
 
 #### Reference
-See https://plot.ly/python/reference/#sunburst for more information and chart attribute options!
+
+See [function reference for `px.sunburst()`](https://plotly.com/python-api-reference/generated/plotly.express.sunburst) or https://plotly.com/python/reference/sunburst/ for more information and chart attribute options!
