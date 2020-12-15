@@ -64,13 +64,17 @@ def charts_table(charts, cols):
                         layout['height'] = chart.height
                     bundle = chart._repr_mimebundle_()
                     bundle_content = None
-                    for k in ['text/html', 'image/svg+xml', 'image/png']:
+                    for k in ['text/html', 'image/svg+xml']:
                         bundle_content = bundle.get(k, None)
                         if bundle_content is not None:
                             break
                     if bundle_content is None:
-                        raise ValueError('No html or svg bundle available (only %s available) - check value of plotly.pio.renderers.default'
-                                         % ', '.join(bundle.keys()))
+                        if 'image/png' in bundle:
+                            base64_img = bundle['image/png']
+                            bundle_content = f'<img src="data:image/png;base64,{base64_img}"</img>'
+                        else:
+                            raise ValueError('No html, svg or png bundle available (only %s available) - check value of plotly.pio.renderers.default'
+                                             % ', '.join(bundle.keys()))
                 elif isinstance(chart, Styler):
                     bundle_content = chart.render()
                 table_content += '<td class="table-no-border">%s</td>' % bundle_content
